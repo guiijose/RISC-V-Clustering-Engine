@@ -121,7 +121,45 @@ cleanScreen:
 
 printClusters:
     # POR IMPLEMENTAR (1a e 2a parte)
-    jr ra
+
+    la t0, n_points
+    lw t1, 0(t0)	#t1 = number of points
+    
+    la t0, points
+    li t2, 0		#t2 = i
+
+    for_printClusters:
+        bge t2, t1, skip_for_printClusters	#execute for only while i < n
+    	
+        slli t3, t2, 2		#i*4
+    	add t0, t0, t3
+	lw a0, 0(t0)		#load x coordinate of point
+	lw a1, 4(t0)		#load y coordinate of point
+	
+	li a2, 0xff00ff		#>>>> na 2a entrega a cor e decidida com base no vetor clusters e tal <<<<
+	
+	#not needed for printPoint specifically, but good abstraction practice
+	addi sp, sp, -20
+	sw t0, 0(sp)
+	sw t1, 4(sp)
+	sw t2, 8(sp)
+	sw t3, 12(sp)
+	sw ra, 16(sp)		#this one is actually necessary
+
+	jal ra, printPoint
+	
+	lw ra, 16(sp)
+	lw t3, 12(sp)
+	lw t2, 8(sp)
+	lw t1, 4(sp)
+	lw t0, 0(sp)
+	addi sp, sp, 20
+
+	addi t2, t2, 2		#next x coordinate is at i+2
+	j for_printClusters
+
+    skip_for_printClusters:
+        jr ra
 
 
 ### printCentroids
@@ -160,6 +198,13 @@ mainSingleCluster:
 
     #3. printClusters
     # POR IMPLEMENTAR (1a parte)
+    
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    jal ra, printClusters
+    lw ra, 0(sp)
+    addi sp, sp, 4
+    
 
     #4. calculateCentroids
     # POR IMPLEMENTAR (1a parte)
@@ -170,6 +215,9 @@ mainSingleCluster:
     #6. Termina
     jr ra
 
+
+
+#====================================================================
 
 
 ### manhattanDistance
@@ -184,9 +232,6 @@ manhattanDistance:
     # POR IMPLEMENTAR (2a parte)
     jr ra
 
-
-
-#====================================================================
 
 
 
