@@ -185,6 +185,11 @@ manhattanDistance:
     jr ra
 
 
+
+#====================================================================
+
+
+
 ### nearestCluster
 # Determina o centroide mais perto de um dado ponto (x,y).
 # Argumentos:
