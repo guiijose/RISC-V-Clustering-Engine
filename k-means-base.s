@@ -2,7 +2,7 @@
 # IAC 2023/2024 k-means
 # 
 # Grupo:
-# Campus:
+# Campus: Alameda
 #
 # Autores:
 # n_aluno, nome
@@ -91,17 +91,17 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 # a2: cor
 
 printPoint:
-    li a3, LED_MATRIX_0_HEIGHT
-    sub a1, a3, a1
-    addi a1, a1, -1
-    li a3, LED_MATRIX_0_WIDTH
-    mul a3, a3, a1
-    add a3, a3, a0
-    slli a3, a3, 2
-    li a0, LED_MATRIX_0_BASE
-    add a3, a3, a0   # addr
-    sw a2, 0(a3)
-    jr ra
+        li a3, LED_MATRIX_0_HEIGHT
+        sub a1, a3, a1
+        addi a1, a1, -1
+        li a3, LED_MATRIX_0_WIDTH
+        mul a3, a3, a1
+        add a3, a3, a0
+        slli a3, a3, 2
+        li a0, LED_MATRIX_0_BASE
+        add a3, a3, a0   # addr
+        sw a2, 0(a3)
+        jr ra
     
 
 ### cleanScreen
@@ -175,15 +175,27 @@ mainSingleCluster:
 ### manhattanDistance
 # Calcula a distancia de Manhattan entre (x0,y0) e (x1,y1)
 # Argumentos:
-# a0, a1: x0, y0
+# a0, a1: x0, y0 
 # a2, a3: x1, y1
 # Retorno:
 # a0: distance
 
 manhattanDistance:
     # POR IMPLEMENTAR (2a parte)
-    jr ra
-
+        sub a0, a2, a0
+        sub a1, a3, a1
+        bge, a0, 0, Skip
+        bge, a1, 0, Skip
+        
+        not a0, a0
+        addi a0, a0, 1
+        not a1, a1
+        addi a1, a1, 1
+        
+        Skip:
+                add, a0, a0, a1
+                jr ra
+        
 
 ### nearestCluster
 # Determina o centroide mais perto de um dado ponto (x,y).
