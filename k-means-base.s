@@ -146,7 +146,7 @@ calculateCentroids:
     li t1, 0           # Initialize sum of y coordinates
     li t2, 0           # Initialize counter for number of points
     la t3, points      # Load address of points array
-    lw t4, n_points(t3) # Load number of points
+    lw t4, n_points # Load number of points
 
 loop:
     beqz t4, finish    # If counter reaches zero, finish loop
