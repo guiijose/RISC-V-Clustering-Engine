@@ -105,7 +105,7 @@ printPoint:
     
 
 ### cleanScreen
-# Limpa todos os pontos do ecr√£
+# Limpa todos os pontos do ecr„
 # Argumentos: nenhum
 # Retorno: nenhum
 
@@ -140,9 +140,29 @@ printCentroids:
 # Argumentos: nenhum
 # Retorno: nenhum
 
+
 calculateCentroids:
-    # POR IMPLEMENTAR (1a e 2a parte)
-    jr ra
+    li t0, 0           # Initialize sum of x coordinates
+    li t1, 0           # Initialize sum of y coordinates
+    li t2, 0           # Initialize counter for number of points
+    la t3, points      # Load address of points array
+    lw t4, n_points(t3) # Load number of points
+
+loop:
+    beqz t4, finish    # If counter reaches zero, finish loop
+    lw t5, 0(t3)       # Load x coordinate
+    add t0, t0, t5     # Add x coordinate to sum
+    lw t6, 4(t3)       # Load y coordinate
+    add t1, t1, t6     # Add y coordinate to sum
+    addi t2, t2, 1     # Increment counter
+    addi t3, t3, 8     # Move to next point
+    addi t4, t4, -1    # Decrement loop counter
+    j loop
+
+finish:
+    div t0, t0, t2     # Calculate average of x coordinates
+    div t1, t1, t2     # Calculate average of y coordinates
+    jr ra              # Return
 
 
 ### mainSingleCluster
