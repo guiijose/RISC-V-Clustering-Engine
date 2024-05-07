@@ -30,7 +30,7 @@
 
 #Input B - Cruz
 #n_points:    .word 5
-#points:     .word 4,2, 5,1, 5,2, 5,3 6,2
+#points:      .word 4,2, 5,1, 5,2, 5,3 6,2
 
 #Input C
 #n_points:    .word 23
@@ -121,7 +121,38 @@ cleanScreen:
 
 printClusters:
     # POR IMPLEMENTAR (1a e 2a parte)
-    jr ra
+
+    la t0, n_points
+    lw t1, 0(t0)	#t1 = number of points
+    slli t1, t1, 1    #number of points * 2 is number of elements in array points
+    
+    la t0, points
+    li t2, 0		#t2 = i
+
+    for_printClusters:
+        bge t2, t1, skip_for_printClusters	#execute for only while i < n
+    	
+        slli t3, t2, 2		#i*4
+        add t4, t0, t3		#base address + (i*4), the base address remains the same, is the what's updated
+	    lw a0, 0(t4)		#load x coordinate of point
+	    lw a1, 4(t4)		#load y coordinate of point
+	
+	    li a2, 0xff00ff		#>>>> na 2a entrega a cor e decidida com base no vetor clusters e tal <<<<
+	
+	    #printPoint doesn't use any temporary registers
+	    addi sp, sp, -4
+	    sw ra, 0(sp)
+
+	    jal ra, printPoint
+	
+	    lw ra, 0(sp)
+	    addi sp, sp, 4
+
+	    addi t2, t2, 2		#next x coordinate is at i+2
+	    j for_printClusters
+
+    skip_for_printClusters:
+        jr ra
 
 
 ### printCentroids
@@ -132,8 +163,42 @@ printClusters:
 
 printCentroids:
     # POR IMPLEMENTAR (1a e 2a parte)
-    jr ra
+
+    la t0, k
+    lw t1, 0(t0)
     
+    la t0, centroids
+    li t2, 0		#t2 = i
+
+    for_printCentroids:
+    	bge t2, t1, skip_forprintCentroids	#execute for only while i < k
+	
+	    slli t3, t2, 2		#i*4
+	    add t4, t0, t3
+    
+        lw a0, 0(t4)		#load x coordinate of point
+	    lw a1, 4(t4)		#load y coordinate of point
+	
+	    li a2, 0xffff00
+
+	    #printPoint doesn't use any temporary registers
+	    addi sp, sp, -4
+	    sw ra, 0(sp)
+
+	    jal ra, printPoint
+	
+	    lw ra, 0(sp)
+	    addi sp, sp, 4
+
+	    addi t2, t2, 2		#next x coordinate is at i+2
+	    j for_printCentroids
+
+
+
+    skip_forprintCentroids:
+        jr ra
+
+
 
 ### calculateCentroids
 # Calcula os k centroides, a partir da distribuicao atual de pontos associados a cada agrupamento (cluster)
@@ -183,16 +248,32 @@ mainSingleCluster:
 
     #3. printClusters
     # POR IMPLEMENTAR (1a parte)
+    
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    jal ra, printClusters
+    lw ra, 0(sp)
+    addi sp, sp, 4
+    
 
     #4. calculateCentroids
     # POR IMPLEMENTAR (1a parte)
 
     #5. printCentroids
     # POR IMPLEMENTAR (1a parte)
+    
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    jal ra, printCentroids
+    lw ra, 0(sp)
+    addi sp, sp, 4
 
     #6. Termina
     jr ra
 
+
+
+#====================================================================
 
 
 ### manhattanDistance
@@ -219,6 +300,8 @@ manhattanDistance:
                 add, a0, a0, a1
                 jr ra
         
+
+
 
 ### nearestCluster
 # Determina o centroide mais perto de um dado ponto (x,y).
