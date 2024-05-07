@@ -139,7 +139,7 @@ printClusters:
 	
 	    li a2, 0xff00ff		#>>>> na 2a entrega a cor e decidida com base no vetor clusters e tal <<<<
 	
-	    #printPoint doesn't use any temporary register
+	    #printPoint doesn't use any temporary registers
 	    addi sp, sp, -4
 	    sw ra, 0(sp)
 
@@ -171,14 +171,34 @@ printCentroids:
     li t2, 0		#t2 = i
 
     for_printCentroids:
-	#bge t2, t1, skip_forprintCentroids	#execute for only while i < k
+    	bge t2, t1, skip_forprintCentroids	#execute for only while i < k
 	
-	slli t3, t2, 2		#i*4
-	#add t0, t0
-
-
-    jr ra
+	    slli t3, t2, 2		#i*4
+	    add t4, t0, t3
     
+        lw a0, 0(t4)		#load x coordinate of point
+	    lw a1, 4(t4)		#load y coordinate of point
+	
+	    li a2, 0xffff00
+
+	    #printPoint doesn't use any temporary registers
+	    addi sp, sp, -4
+	    sw ra, 0(sp)
+
+	    jal ra, printPoint
+	
+	    lw ra, 0(sp)
+	    addi sp, sp, 4
+
+	    addi t2, t2, 2		#next x coordinate is at i+2
+	    j for_printCentroids
+
+
+
+    skip_forprintCentroids:
+        jr ra
+
+
 
 ### calculateCentroids
 # Calcula os k centroides, a partir da distribuicao atual de pontos associados a cada agrupamento (cluster)
@@ -218,6 +238,12 @@ mainSingleCluster:
 
     #5. printCentroids
     # POR IMPLEMENTAR (1a parte)
+    
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    jal ra, printCentroids
+    lw ra, 0(sp)
+    addi sp, sp, 4
 
     #6. Termina
     jr ra
