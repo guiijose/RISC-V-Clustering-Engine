@@ -30,7 +30,7 @@
 
 #Input B - Cruz
 #n_points:    .word 5
-#points:     .word 4,2, 5,1, 5,2, 5,3 6,2
+#points:      .word 4,2, 5,1, 5,2, 5,3 6,2
 
 #Input C
 #n_points:    .word 23
@@ -124,6 +124,7 @@ printClusters:
 
     la t0, n_points
     lw t1, 0(t0)	#t1 = number of points
+    slli t1, t1, 1    #number of points * 2 is number of elements in array points
     
     la t0, points
     li t2, 0		#t2 = i
@@ -132,31 +133,33 @@ printClusters:
         bge t2, t1, skip_for_printClusters	#execute for only while i < n
     	
         slli t3, t2, 2		#i*4
-    	add t0, t0, t3
-	lw a0, 0(t0)		#load x coordinate of point
-	lw a1, 4(t0)		#load y coordinate of point
+        add t4, t0, t3		#base address + (i*4), the base address remains the same, is the what's updated
+	    lw a0, 0(t4)		#load x coordinate of point
+	    lw a1, 4(t4)		#load y coordinate of point
 	
-	li a2, 0xff00ff		#>>>> na 2a entrega a cor e decidida com base no vetor clusters e tal <<<<
+	    li a2, 0xff00ff		#>>>> na 2a entrega a cor e decidida com base no vetor clusters e tal <<<<
 	
-	#not needed for printPoint specifically, but good abstraction practice
-	addi sp, sp, -20
-	sw t0, 0(sp)
-	sw t1, 4(sp)
-	sw t2, 8(sp)
-	sw t3, 12(sp)
-	sw ra, 16(sp)		#this one is actually necessary
+	    #not needed for printPoint specifically, but good abstraction practice
+	    addi sp, sp, -24
+	    sw t0, 0(sp)
+	    sw t1, 4(sp)
+	    sw t2, 8(sp)
+	    sw t3, 12(sp)
+	    sw t4, 16(sp)
+	    sw ra, 20(sp)		#this one is actually necessary
 
-	jal ra, printPoint
+	    jal ra, printPoint
 	
-	lw ra, 16(sp)
-	lw t3, 12(sp)
-	lw t2, 8(sp)
-	lw t1, 4(sp)
-	lw t0, 0(sp)
-	addi sp, sp, 20
+	    lw ra, 20(sp)
+	    lw t4, 16(sp)
+	    lw t3, 12(sp)
+	    lw t2, 8(sp)
+	    lw t1, 4(sp)
+	    lw t0, 0(sp)
+	    addi sp, sp, 24
 
-	addi t2, t2, 2		#next x coordinate is at i+2
-	j for_printClusters
+	    addi t2, t2, 2		#next x coordinate is at i+2
+	    j for_printClusters
 
     skip_for_printClusters:
         jr ra
@@ -170,6 +173,20 @@ printClusters:
 
 printCentroids:
     # POR IMPLEMENTAR (1a e 2a parte)
+
+    la t0, k
+    lw t1, 0(t0)
+    
+    la t0, centroids
+    li t2, 0		#t2 = i
+
+    for_printCentroids:
+	#bge t2, t1, skip_forprintCentroids	#execute for only while i < k
+	
+	slli t3, t2, 2		#i*4
+	#add t0, t0
+
+
     jr ra
     
 
