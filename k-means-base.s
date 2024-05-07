@@ -105,7 +105,7 @@ printPoint:
     
 
 ### cleanScreen
-# Limpa todos os pontos do ecrã
+# Limpa todos os pontos do ecr?
 # Argumentos: nenhum
 # Retorno: nenhum
 
@@ -162,6 +162,9 @@ loop:
 finish:
     div t0, t0, t2     # Calculate average of x coordinates
     div t1, t1, t2     # Calculate average of y coordinates
+    la x28, 0(centroids)
+    sw t0, 0(x28)
+    sw t1, 4(x28)
     jr ra              # Return
 
 
