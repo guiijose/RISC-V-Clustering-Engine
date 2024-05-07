@@ -139,24 +139,14 @@ printClusters:
 	
 	    li a2, 0xff00ff		#>>>> na 2a entrega a cor e decidida com base no vetor clusters e tal <<<<
 	
-	    #not needed for printPoint specifically, but good abstraction practice
-	    addi sp, sp, -24
-	    sw t0, 0(sp)
-	    sw t1, 4(sp)
-	    sw t2, 8(sp)
-	    sw t3, 12(sp)
-	    sw t4, 16(sp)
-	    sw ra, 20(sp)		#this one is actually necessary
+	    #printPoint doesn't use any temporary register
+	    addi sp, sp, -4
+	    sw ra, 0(sp)
 
 	    jal ra, printPoint
 	
-	    lw ra, 20(sp)
-	    lw t4, 16(sp)
-	    lw t3, 12(sp)
-	    lw t2, 8(sp)
-	    lw t1, 4(sp)
-	    lw t0, 0(sp)
-	    addi sp, sp, 24
+	    lw ra, 0(sp)
+	    addi sp, sp, 4
 
 	    addi t2, t2, 2		#next x coordinate is at i+2
 	    j for_printClusters
