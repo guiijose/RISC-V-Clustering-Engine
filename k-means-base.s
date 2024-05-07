@@ -2,7 +2,7 @@
 # IAC 2023/2024 k-means
 # 
 # Grupo:
-# Campus:
+# Campus: Alameda
 #
 # Autores:
 # n_aluno, nome
@@ -91,21 +91,21 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 # a2: cor
 
 printPoint:
-    li a3, LED_MATRIX_0_HEIGHT
-    sub a1, a3, a1
-    addi a1, a1, -1
-    li a3, LED_MATRIX_0_WIDTH
-    mul a3, a3, a1
-    add a3, a3, a0
-    slli a3, a3, 2
-    li a0, LED_MATRIX_0_BASE
-    add a3, a3, a0   # addr
-    sw a2, 0(a3)
-    jr ra
+        li a3, LED_MATRIX_0_HEIGHT
+        sub a1, a3, a1
+        addi a1, a1, -1
+        li a3, LED_MATRIX_0_WIDTH
+        mul a3, a3, a1
+        add a3, a3, a0
+        slli a3, a3, 2
+        li a0, LED_MATRIX_0_BASE
+        add a3, a3, a0   # addr
+        sw a2, 0(a3)
+        jr ra
     
 
 ### cleanScreen
-# Limpa todos os pontos do ecrã
+# Limpa todos os pontos do ecr?
 # Argumentos: nenhum
 # Retorno: nenhum
 
@@ -140,9 +140,32 @@ printCentroids:
 # Argumentos: nenhum
 # Retorno: nenhum
 
+
 calculateCentroids:
-    # POR IMPLEMENTAR (1a e 2a parte)
-    jr ra
+    li t0, 0           # Initialize sum of x coordinates
+    li t1, 0           # Initialize sum of y coordinates
+    li t2, 0           # Initialize counter for number of points
+    la t3, points      # Load address of points array
+    lw t4, n_points # Load number of points
+
+loop:
+    beqz t4, finish    # If counter reaches zero, finish loop
+    lw t5, 0(t3)       # Load x coordinate
+    add t0, t0, t5     # Add x coordinate to sum
+    lw t6, 4(t3)       # Load y coordinate
+    add t1, t1, t6     # Add y coordinate to sum
+    addi t2, t2, 1     # Increment counter
+    addi t3, t3, 8     # Move to next point
+    addi t4, t4, -1    # Decrement loop counter
+    j loop
+
+finish:
+    div t0, t0, t2     # Calculate average of x coordinates
+    div t1, t1, t2     # Calculate average of y coordinates
+    la x28, 0(centroids)
+    sw t0, 0(x28)
+    sw t1, 4(x28)
+    jr ra              # Return
 
 
 ### mainSingleCluster
@@ -175,15 +198,27 @@ mainSingleCluster:
 ### manhattanDistance
 # Calcula a distancia de Manhattan entre (x0,y0) e (x1,y1)
 # Argumentos:
-# a0, a1: x0, y0
+# a0, a1: x0, y0 
 # a2, a3: x1, y1
 # Retorno:
 # a0: distance
 
 manhattanDistance:
     # POR IMPLEMENTAR (2a parte)
-    jr ra
-
+        sub a0, a2, a0
+        sub a1, a3, a1
+        bge, a0, 0, Skip
+        bge, a1, 0, Skip
+        
+        not a0, a0
+        addi a0, a0, 1
+        not a1, a1
+        addi a1, a1, 1
+        
+        Skip:
+                add, a0, a0, a1
+                jr ra
+        
 
 ### nearestCluster
 # Determina o centroide mais perto de um dado ponto (x,y).
