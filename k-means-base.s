@@ -117,25 +117,24 @@ printPoint:
 
 cleanScreen:
     # POR IMPLEMENTAR (1a parte)
-    addi sp, sp, -4
-    sw ra, 0(sp)
+    addi sp, sp, -4  # Criar espaco na stack
+    sw ra, 0(sp)   # Guardar o return adress na stack
     li a2, black   # Carregar a cor para a0
-    li t0, 31    # Carregar o numero de pixeis
+    li t0, 31    # Carregar o numero de pixeis nas colunas (0-31)
     linhas:
-        li t1 31
+        li t1 31  # Carregar o numero de pixeis nas linhas (0-31)
         colunas:
-            mv a0, t0
-            mv a1, t1
-            jal printPoint
-            addi t1, t1, -1
-            bgez t1, colunas
+            mv a0, t0  # Mover t0 para um argumento 
+            mv a1, t1  # Mover t1 para um argumento
+            jal printPoint  # Chamar a funcao printPoint com os argumentos (a0, a1, a2)
+            addi t1, t1, -1 # Reduzir uma posicao
+            bgez t1, colunas  # Se ainda existir uma posicao seguinte, chamar o loop novamente
         
-        addi t0, t0 -1
-        bgez t0, linhas
-        j linhas
-    lw ra, 0(sp)
-    addi sp, sp, 4
-    jr ra
+        addi t0, t0 -1  # Reduzir uma posicao
+        bgez t0, linhas  # Se ainda existir uma posicao seguinte, chamar o loop novamente
+    lw ra, 0(sp)  # Carregar o return adress inicial
+    addi sp, sp, 4 # Restaurar a stack para o seu estado inicial
+    jr ra  # Return
 
     
 ### printClusters
@@ -177,22 +176,42 @@ calculateCentroids:
 mainSingleCluster:
 
     #1. Coloca k=1 (caso nao esteja a 1)
-    # POR IMPLEMENTAR (1a parte)
+    
+    la t0, k
+    li t1, 1
+    sw t1, 0(t0)
+
 
     #2. cleanScreen
-    # POR IMPLEMENTAR (1a parte)
+    
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    
+    
+    jal ra, cleanScreen
+
 
     #3. printClusters
-    # POR IMPLEMENTAR (1a parte)
+
+    jal ra, printClusters
+
+    
 
     #4. calculateCentroids
-    # POR IMPLEMENTAR (1a parte)
+    
+    jal ra, calculateCentroids
 
     #5. printCentroids
-    # POR IMPLEMENTAR (1a parte)
+    
+    jal ra, printCentroids
+   
+    lw ra, 0(sp)
+    addi sp, sp, 4
 
     #6. Termina
+    
     jr ra
+
 
 
 
