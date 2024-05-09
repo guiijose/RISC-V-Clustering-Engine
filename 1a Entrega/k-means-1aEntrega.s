@@ -1,13 +1,13 @@
 #
 # IAC 2023/2024 k-means
 # 
-# Grupo:
+# Grupo: 63
 # Campus: Alameda
 #
 # Autores:
-# n_aluno, nome
-# n_aluno, nome
-# n_aluno, nome
+# 109441, Alexandre Delgado
+# 109704, Guilherme Jose
+# 109851, Francisco Goncalves
 #
 # Tecnico/ULisboa
 
@@ -104,33 +104,81 @@ printPoint:
         add a3, a3, a0   # addr
         sw a2, 0(a3)
         jr ra
-    
 
+
+
+    
 ### cleanScreen
-# Limpa todos os pontos do ecr?
+# Limpa todos os pontos do ecrã
 # Argumentos: nenhum
 # Retorno: nenhum
 
 cleanScreen:
-    # POR IMPLEMENTAR (1a parte)
-    addi sp, sp, -4
-    sw ra, 0(sp)
+    addi sp, sp, -4  # Criar espaco na stack
+    sw ra, 0(sp)   # Guardar o return adress na stack
     li a2, black   # Carregar a cor para a0
-    li t0, 31    # Carregar o numero de pixeis
+    li t0, 31    # Carregar o numero de pixeis nas colunas (0-31)
     linhas:
-        li t1 31
+        li t1 31  # Carregar o numero de pixeis nas linhas (0-31)
         colunas:
-            mv a0, t0
-            mv a1, t1
-            jal printPoint
-            addi t1, t1, -1
-            bgez t1, colunas
+            mv a0, t0  # Mover t0 para um argumento 
+            mv a1, t1  # Mover t1 para um argumento
+            jal printPoint  # Chamar a funcao printPoint com os argumentos (a0, a1, a2)
+            addi t1, t1, -1 # Reduzir uma posicao
+            bgez t1, colunas  # Se ainda existir uma posicao seguinte, chamar o loop novamente
         
-        addi t0, t0 -1
-        bgez t0, linhas
-    lw ra, 0(sp)
-    addi sp, sp, 4
-    jr ra
+        addi t0, t0 -1  # Reduzir uma posicao
+        bgez t0, linhas  # Se ainda existir uma posicao seguinte, chamar o loop novamente
+    lw ra, 0(sp)  # Carregar o return adress inicial
+    addi sp, sp, 4 # Restaurar a stack para o seu estado inicial
+    jr ra  # Return
+
+
+
+
+### printFromVector:
+# FUNCAO AUXILIAR
+# Percorre um vetor de pontos e pinta-os na LED matrix
+# Argumentos:
+# a0: endereco do vetor
+# a1: numero de pontos a pintar
+# a2: cor para os pontos
+# Retorno: nenhum
+
+printFromVector:
+    mv t0, a0         #t0 = endereco base do vetor
+    mv t1, a1         #t1 = numero de pontos
+    slli t1, t1, 1    #t1 = numero de pontos * 2 = numero de elementos no vetor
+    li t2, 0          #t2 = i
+    
+    for_printFromVector:
+        bge t2, t1, skip_for_printFromVector    #Loop for corre apenas enquanto i < numero de elementos do vetor
+        
+        slli t3, t2, 2    #i*4
+        add t4, t0, t3    #Endereco base + (i*4)
+        lw a0, 0(t4)      #Coordenada x e o primeiro argumento do printPoint
+        lw a1, 4(t4)      #Coordenada y e o segundo argumento
+        
+        #A cor ja esta no a2
+        
+        
+        #Salvaguardar o endereco de retorno (printPoint nao interfere com registos temporarios)
+        addi sp, sp, -4
+        sw ra, 0(sp)
+
+        jal ra, printPoint    #Pinta ponto na matriz
+        
+        #Recuperar o endereco de retorno
+        lw ra, 0(sp)
+        addi sp, sp, 4
+        
+        
+        addi t2, t2, 2    #Proximo x esta em i+2
+        j for_printFromVector
+        
+    skip_for_printFromVector:
+        jr ra
+        
 
     
 ### printClusters
@@ -139,39 +187,25 @@ cleanScreen:
 # Retorno: nenhum
 
 printClusters:
-    # POR IMPLEMENTAR (1a e 2a parte)
-
-    la t0, n_points
-    lw t1, 0(t0)	#t1 = number of points
-    slli t1, t1, 1    #number of points * 2 is number of elements in array points
+    la a0, points        #Endereco do vetor points e o primeiro argumento
+    la a1 n_points       
+    lw a1, 0(a1)         #Numero de pontos a pintar e o segundo argumento
+    li a2, 0xff00ff      #Cor e o terceiro argumento
     
-    la t0, points
-    li t2, 0		#t2 = i
-
-    for_printClusters:
-        bge t2, t1, skip_for_printClusters	#execute for only while i < n
-    	
-        slli t3, t2, 2		#i*4
-        add t4, t0, t3		#base address + (i*4), the base address remains the same, is the what's updated
-	    lw a0, 0(t4)		#load x coordinate of point
-	    lw a1, 4(t4)		#load y coordinate of point
-	
-	    li a2, 0xff00ff		#>>>> na 2a entrega a cor e decidida com base no vetor clusters e tal <<<<
-	
-	    #printPoint doesn't use any temporary registers
-	    addi sp, sp, -4
-	    sw ra, 0(sp)
-
-	    jal ra, printPoint
-	
-	    lw ra, 0(sp)
-	    addi sp, sp, 4
-
-	    addi t2, t2, 2		#next x coordinate is at i+2
-	    j for_printClusters
-
-    skip_for_printClusters:
-        jr ra
+    
+    #Salvaguardar o endereco de retorno
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    
+    jal ra, printFromVector    #Pinta os pontos do vetor na matriz
+    
+    #Recuperar o endereco de retorno
+    lw ra, 0(sp)
+    addi sp, sp, 4
+    
+    
+    jr ra
+  
 
 
 ### printCentroids
@@ -181,43 +215,27 @@ printClusters:
 # Retorno: nenhum
 
 printCentroids:
-    # POR IMPLEMENTAR (1a e 2a parte)
-
-    la t0, k
-    lw t1, 0(t0)
+    la a0, centroids        #Endereco do vetor centroids e o primeiro argumento
+    la a1, k                
+    lw a1, 0(a1)            #Numero de pontos a pintar e o segundo argumento
+    li a2, 0xffff00         #Cor e o terceiro argumento
     
-    la t0, centroids
-    li t2, 0		#t2 = i
-
-    for_printCentroids:
-    	bge t2, t1, skip_forprintCentroids	#execute for only while i < k
-	
-	    slli t3, t2, 2		#i*4
-	    add t4, t0, t3
     
-        lw a0, 0(t4)		#load x coordinate of point
-	    lw a1, 4(t4)		#load y coordinate of point
-	
-	    li a2, 0xffff00
-
-	    #printPoint doesn't use any temporary registers
-	    addi sp, sp, -4
-	    sw ra, 0(sp)
-
-	    jal ra, printPoint
-	
-	    lw ra, 0(sp)
-	    addi sp, sp, 4
-
-	    addi t2, t2, 2		#next x coordinate is at i+2
-	    j for_printCentroids
-
-
-
-    skip_forprintCentroids:
-        jr ra
-
-
+    #Salvaguardar o endereco de retorno
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    
+    jal ra, printFromVector    #Pinta os pontos do vetor na matriz
+    
+    #Recuperar o endereco de retorno
+    lw ra, 0(sp)
+    addi sp, sp, 4
+    
+    
+    jr ra
+    
+    
+    
 
 ### calculateCentroids
 # Calcula os k centroides, a partir da distribuicao atual de pontos associados a cada agrupamento (cluster)
@@ -260,49 +278,39 @@ finish:
 mainSingleCluster:
 
     #1. Coloca k=1 (caso nao esteja a 1)
-    # POR IMPLEMENTAR (1a parte)
-    
     la t0, k
     li t1, 1
     sw t1, 0(t0)
 
 
     #2. cleanScreen
-    # POR IMPLEMENTAR (1a parte)
-    
     addi sp, sp, -4
     sw ra, 0(sp)
-    
     
     jal ra, cleanScreen
 
 
     #3. printClusters
-    # POR IMPLEMENTAR (1a parte)
-
     jal ra, printClusters
 
     
-
-    #4. calculateCentroids
-    # POR IMPLEMENTAR (1a parte)
-    
+    #4. calculateCentroids    
     jal ra, calculateCentroids
 
+
     #5. printCentroids
-    # POR IMPLEMENTAR (1a parte)
-    
     jal ra, printCentroids
    
     lw ra, 0(sp)
     addi sp, sp, 4
+
 
     #6. Termina
     jr ra
 
 
 
-#====================================================================
+
 
 
 ### manhattanDistance
