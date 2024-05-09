@@ -277,49 +277,39 @@ finish:
 mainSingleCluster:
 
     #1. Coloca k=1 (caso nao esteja a 1)
-    # POR IMPLEMENTAR (1a parte)
-    
     la t0, k
     li t1, 1
     sw t1, 0(t0)
 
 
     #2. cleanScreen
-    # POR IMPLEMENTAR (1a parte)
-    
     addi sp, sp, -4
     sw ra, 0(sp)
-    
     
     jal ra, cleanScreen
 
 
     #3. printClusters
-    # POR IMPLEMENTAR (1a parte)
-
     jal ra, printClusters
 
     
-
-    #4. calculateCentroids
-    # POR IMPLEMENTAR (1a parte)
-    
+    #4. calculateCentroids    
     jal ra, calculateCentroids
 
+
     #5. printCentroids
-    # POR IMPLEMENTAR (1a parte)
-    
     jal ra, printCentroids
    
     lw ra, 0(sp)
     addi sp, sp, 4
+
 
     #6. Termina
     jr ra
 
 
 
-#====================================================================
+
 
 
 ### manhattanDistance
