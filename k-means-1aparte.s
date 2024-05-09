@@ -1,13 +1,13 @@
 #
 # IAC 2023/2024 k-means
 # 
-# Grupo:
+# Grupo: 63
 # Campus: Alameda
 #
 # Autores:
-# n_aluno, nome
-# n_aluno, nome
-# n_aluno, nome
+# 109441, Alexandre Delgado
+# 109704, Guilherme Jose
+# 109851, Francisco Goncalves
 #
 # Tecnico/ULisboa
 
@@ -132,6 +132,45 @@ cleanScreen:
     addi sp, sp, 4
     jr ra
 
+
+
+
+### printFromVector:
+# Percorre um vetor de pontos e pinta-os na LED matrix
+# Argumentos:
+# a0: endereco do vetor
+# a1: numero pontos a pintar
+# a2: cor para os pontos
+
+
+printFromVector:
+    mv t0, a0         #t0 = endereco base do vetor
+    mv t1, a1
+    slli t1, t1, 1    #t1 = numero de pontos * 2 = numero de elementos no vetor
+    li t2, 0          #t2 = i
+    
+    
+    for_printFromVector:
+        bge t2, t1, skip_for_printFromVector        #O for corre apenas enquanto i < n
+        
+        slli t3, t2, 2    #i*4
+        add t4, t0, t3    #Endereco base + (i*4)
+        lw a0, 0()
+        lw a1, 4()
+        
+        #cor ja esta no a2
+        
+        addi sp, sp,
+        ...
+        
+        jal ra, printPoint
+        
+        ...
+        addi sp, sp
+        
+        addi t2, t2, 2    #Proximo x esta em i+2
+
+
     
 ### printClusters
 # Pinta os agrupamentos na LED matrix com a cor correspondente.
@@ -142,9 +181,8 @@ printClusters:
     # POR IMPLEMENTAR (1a e 2a parte)
 
     la t0, n_points
-    lw t1, 0(t0)	#t1 = number of points
-    slli t1, t1, 1    #number of points * 2 is number of elements in array points
-    
+    lw t1, 0(t0)            #t1 = numero de pontos
+    slli t1, t1, 1          #Numero de pontos * 2 e o numero de elementos no vetor    
     la t0, points
     li t2, 0		#t2 = i
 
