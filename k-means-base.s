@@ -64,6 +64,8 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 
 .equ         black      0
 .equ         white      0xffffff
+.equ LED_MATRIX_WIDTH, 32   # Definir tamanho
+.equ LED_MATRIX_HEIGHT, 32  # Definir tamanho
 
 
 
@@ -71,7 +73,11 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
  
 .text
     # Chama funcao principal da 1a parte do projeto
-    jal mainSingleCluster
+    li a0, 30
+    li a1, 30
+    li a2, white
+    jal printPoint
+    jal cleanScreen
 
     # Descomentar na 2a parte do projeto:
     #jal mainKMeans
@@ -111,6 +117,24 @@ printPoint:
 
 cleanScreen:
     # POR IMPLEMENTAR (1a parte)
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    li a2, black   # Carregar a cor para a0
+    li t0, 31    # Carregar o numero de pixeis
+    linhas:
+        li t1 31
+        colunas:
+            mv a0, t0
+            mv a1, t1
+            jal printPoint
+            addi t1, t1, -1
+            bgez t1, colunas
+        
+        addi t0, t0 -1
+        bgez t0, linhas
+        j linhas
+    lw ra, 0(sp)
+    addi sp, sp, 4
     jr ra
 
     
