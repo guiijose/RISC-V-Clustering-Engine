@@ -73,12 +73,8 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
  
 .text
     # Chama funcao principal da 1a parte do projeto
-    li a0, 30
-    li a1, 30
-    li a2, white
-    jal printPoint
-    jal cleanScreen
-
+    jal ra, mainSingleCluster
+    
     # Descomentar na 2a parte do projeto:
     #jal mainKMeans
     
@@ -132,7 +128,6 @@ cleanScreen:
         
         addi t0, t0 -1
         bgez t0, linhas
-        j linhas
     lw ra, 0(sp)
     addi sp, sp, 4
     jr ra
@@ -251,7 +246,7 @@ loop:
 finish:
     div t0, t0, t2     # Calculate average of x coordinates
     div t1, t1, t2     # Calculate average of y coordinates
-    la x28, 0(centroids)
+    la x28, centroids
     sw t0, 0(x28)
     sw t1, 4(x28)
     jr ra              # Return
@@ -266,29 +261,39 @@ mainSingleCluster:
 
     #1. Coloca k=1 (caso nao esteja a 1)
     # POR IMPLEMENTAR (1a parte)
+    
+    la t0, k
+    li t1, 1
+    sw t1, 0(t0)
+
 
     #2. cleanScreen
-    # POR IMPLEMENTAR (1a parte)
-
-    #3. printClusters
     # POR IMPLEMENTAR (1a parte)
     
     addi sp, sp, -4
     sw ra, 0(sp)
+    
+    
+    jal ra, cleanScreen
+
+
+    #3. printClusters
+    # POR IMPLEMENTAR (1a parte)
+
     jal ra, printClusters
-    lw ra, 0(sp)
-    addi sp, sp, 4
+
     
 
     #4. calculateCentroids
     # POR IMPLEMENTAR (1a parte)
+    
+    jal ra, calculateCentroids
 
     #5. printCentroids
     # POR IMPLEMENTAR (1a parte)
     
-    addi sp, sp, -4
-    sw ra, 0(sp)
     jal ra, printCentroids
+   
     lw ra, 0(sp)
     addi sp, sp, 4
 
@@ -312,8 +317,8 @@ manhattanDistance:
     # POR IMPLEMENTAR (2a parte)
         sub a0, a2, a0
         sub a1, a3, a1
-        bge, a0, 0, Skip
-        bge, a1, 0, Skip
+        bge a0, x0, Skip
+        bge a1, x0, Skip
         
         not a0, a0
         addi a0, a0, 1
