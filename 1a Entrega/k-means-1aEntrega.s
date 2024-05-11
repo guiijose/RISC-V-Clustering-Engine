@@ -109,7 +109,7 @@ printPoint:
 
     
 ### cleanScreen
-# Limpa todos os pontos do ecr√£
+# Limpa todos os pontos do ecr„
 # Argumentos: nenhum
 # Retorno: nenhum
 
@@ -188,8 +188,7 @@ printFromVector:
 
 printClusters:
     la a0, points        #Endereco do vetor points e o primeiro argumento
-    la a1 n_points       
-    lw a1, 0(a1)         #Numero de pontos a pintar e o segundo argumento
+    mv a1, s0            #Numero de pontos a pintar e o segundo argumento
     li a2, 0xff00ff      #Cor e o terceiro argumento
     
     
@@ -244,30 +243,28 @@ printCentroids:
 
 
 calculateCentroids:
-    li t0, 0           # Initialize sum of x coordinates
-    li t1, 0           # Initialize sum of y coordinates
-    li t2, 0           # Initialize counter for number of points
-    la t3, points      # Load address of points array
-    lw t4, n_points # Load number of points
+    li t0, 0           # Inicializa soma das coordenadas x
+    li t1, 0           # Inicializa soma das coordenadas y
+    la t3, points      # Load do address do vetor points
+    mv t4, s0          # Copia do numero de pontos
 
 loop:
-    beqz t4, finish    # If counter reaches zero, finish loop
-    lw t5, 0(t3)       # Load x coordinate
-    add t0, t0, t5     # Add x coordinate to sum
-    lw t6, 4(t3)       # Load y coordinate
-    add t1, t1, t6     # Add y coordinate to sum
-    addi t2, t2, 1     # Increment counter
-    addi t3, t3, 8     # Move to next point
-    addi t4, t4, -1    # Decrement loop counter
-    j loop
+    beqz t4, finish    # Verifica se ha pontos a analisar
+    lw t5, 0(t3)       # Load da coordenada x
+    add t0, t0, t5     # Adiciona coordenada x a soma
+    lw t6, 4(t3)       # Load da coordenada y
+    add t1, t1, t6     # Adiciona coordenada y a soma
+    addi t3, t3, 8     # Muda o address para o proximo ponto
+    addi t4, t4, -1    # Decrementa o numero de pontos que ainda falta
+    j loop             # Volta ao inicio
 
 finish:
-    div t0, t0, t2     # Calculate average of x coordinates
-    div t1, t1, t2     # Calculate average of y coordinates
-    la x28, centroids
-    sw t0, 0(x28)
-    sw t1, 4(x28)
-    jr ra              # Return
+    div t0, t0, s0     # Calcula media das coordenadas x
+    div t1, t1, s0     # Calcula media das coordenadas y
+    la x28, centroids  # Load do address dos centroides
+    sw t0, 0(x28)      # Guarda a coordenada x 
+    sw t1, 4(x28)      # Guarda a coordenada y
+    jr ra              # Termina
 
 
 ### mainSingleCluster
@@ -282,7 +279,9 @@ mainSingleCluster:
     li t1, 1
     sw t1, 0(t0)
 
-
+    la s0, n_points
+    lw, s0, 0(s0)
+    
     #2. cleanScreen
     addi sp, sp, -4
     sw ra, 0(sp)
