@@ -53,8 +53,10 @@ k:           .word 1
 
 # Abaixo devem ser declarados o vetor clusters (2a parte) e outras estruturas de dados
 # que o grupo considere necessarias para a solucao:
-clusters:	.word 0, 0, 0, 0   
+clusters:	.word 0, 0, 0, 0, 0
 
+# Cada posicao contem o numero de pontos que pertencem ao cluster correspondente
+points_per_cluster:    .word    0, 0, 0, 0, 0
 
 
 
@@ -303,13 +305,6 @@ mainSingleCluster:
 
 
 
-
-
-
-
-# O QUE ESTA EM BAIXO E APENAS PARA A 2a PARTE, NAO AVALIAR
-
-
 ### manhattanDistance
 # Calcula a distancia de Manhattan entre (x0,y0) e (x1,y1)
 # Argumentos:
@@ -336,7 +331,6 @@ manhattanDistance:
         
 
 
-
 ### nearestCluster
 # Determina o centroide mais perto de um dado ponto (x,y).
 # Argumentos:
@@ -345,7 +339,40 @@ manhattanDistance:
 # a0: cluster index
 
 nearestCluster:
-    # POR IMPLEMENTAR (2a parte)
+    la t0, centroids
+    li t1, 0            # t1 ira guardar a maior distancia
+    li t2, 0            # t2 = i
+    
+    for_nearestCluster:
+        #falta condicao principal tho que é o percorrer o vetor dos centroids todo
+        slli t3, t2, 2    #i*4
+        add t4, t3, t0    #t4 = endereco base + (i*4)
+        
+        lw a2, 0(t4)    #carrega x do centroide
+        lw a3, 4(t4)    #carrega y do centroide
+        
+        addi sp, sp, -12
+        sw ra, 0(sp)
+        sw a0, 4(sp)
+        sw a1, 8(sp)
+        
+        jal ra, manhattanDistance
+        
+        mv t5, a0
+        
+        lw a1, 8(sp)
+        lw a0, 4(sp)
+        lw ra, 0(sp)
+        addi sp, sp, 12
+        
+        bgt t1, t4, for_nearestCluster   # Se distancia antiga (t1) continuar a ser a maior, reinicia logo o loop
+        mv t1, t4                        # Distancia em t4 passa a ser a maior distancia
+        
+        j for_nearestCluster
+     
+    
+    
+    
     jr ra
 
 
