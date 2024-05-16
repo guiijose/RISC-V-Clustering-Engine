@@ -109,29 +109,29 @@ printPoint:
 
     
 ### cleanScreen
-# Limpa todos os pontos do ecr�
+# Limpa todos os pontos do ecra
 # Argumentos: nenhum
 # Retorno: nenhum
 
 cleanScreen:
-    addi sp, sp, -4                 # Criar espaco na stack
-    sw ra, 0(sp)                    # Guardar o return adress na stack
-    li a2, black                    # Carregar a cor para a2
-    li t0, 31                       # Carregar o numero de pixeis nas colunas (0-31)
+    addi sp, sp, -4             # Criar espaco no stack
+    sw ra, 0(sp)                # Guardar o return adress no stack
+    li a2, white                # Carregar a cor para a2
+    li t0, 31                   # Carregar o numero de pixeis nas colunas (0-31)
     linhas:
-        li t1 31                    # Carregar o numero de pixeis nas linhas (0-31)
+        li t1 31                # Carregar o numero de pixeis nas linhas (0-31)
         colunas:
-            mv a0, t0               # Mover t0 para um argumento 
-            mv a1, t1               # Mover t1 para um argumento
-            jal printPoint          # Chamar a funcao printPoint com os argumentos (a0, a1, a2)
-            addi t1, t1, -1         # Reduzir uma posicao
-            bgez t1, colunas        # Se ainda existir uma posicao seguinte, chamar o loop novamente
+            mv a0, t0           # Mover t0 para um argumento 
+            mv a1, t1           # Mover t1 para um argumento
+            jal printPoint      # Chamar a funcao printPoint com os argumentos (a0, a1, a2)
+            addi t1, t1, -1     # Reduzir uma posicao
+            bgez t1, colunas    # Se ainda existir uma posicao seguinte, chamar loop novamente
         
-        addi t0, t0 -1              # Reduzir uma posicao
-        bgez t0, linhas             # Se ainda existir uma posicao seguinte, chamar o loop novamente
-    lw ra, 0(sp)                    # Carregar o return adress inicial
-    addi sp, sp, 4                  # Restaurar a stack para o seu estado inicial
-    jr ra                           # Return
+        addi t0, t0 -1          # Reduzir uma posicao
+        bgez t0, linhas         # Se ainda existir uma posicao seguinte, chamar loop novamente
+    lw ra, 0(sp)                # Carregar o return address inicial
+    addi sp, sp, 4              # Restaurar o stack para o seu estado inicial
+    jr ra                       # Return
 
 
 
@@ -186,7 +186,7 @@ printFromVector:
 printClusters:
     la a0, points              # Endereco do vetor points e o primeiro argumento
     mv a1, s0                  # Numero de pontos a pintar e o segundo argumento
-    li a2, 0xff00ff            # Cor e o terceiro argumento
+    li a2, 0xff0000            # Cor e o terceiro argumento
     
     
     addi sp, sp, -4            # Criar espaco no stack
@@ -212,13 +212,13 @@ printCentroids:
     la a0, centroids           # Endereco do vetor centroids e o primeiro argumento
     la a1, k                
     lw a1, 0(a1)               # Numero de pontos a pintar e o segundo argumento
-    li a2, 0xffff00            # Cor e o terceiro argumento
+    li a2, black               # Cor e o terceiro argumento
     
     
     addi sp, sp, -4            # Criar espaco no stack
     sw ra, 0(sp)               # Guardar endereco de retorno
     
-    jal ra, printFromVector    #Pinta os pontos do vetor na matriz
+    jal ra, printFromVector    # Pinta os pontos do vetor na matriz
     
 
     lw ra, 0(sp)               # Recuperar endereco de retorno
@@ -277,8 +277,8 @@ mainSingleCluster:
     lw, s0, 0(s0)
     
     #2. cleanScreen
-    addi sp, sp, -4
-    sw ra, 0(sp)
+    addi sp, sp, -4        # Criar espaco no stack
+    sw ra, 0(sp)           # Guardar endereco de retorno
     
     jal ra, cleanScreen
 
@@ -294,8 +294,8 @@ mainSingleCluster:
     #5. printCentroids
     jal ra, printCentroids
    
-    lw ra, 0(sp)
-    addi sp, sp, 4
+    lw ra, 0(sp)           # Recuperar endereco de retorno
+    addi sp, sp, 4         # Restaurar a stack para o seu estado inicial
 
 
     #6. Termina
@@ -306,6 +306,8 @@ mainSingleCluster:
 
 
 
+
+# O QUE ESTA EM BAIXO E APENAS PARA A 2a PARTE, NAO AVALIAR
 
 
 ### manhattanDistance
