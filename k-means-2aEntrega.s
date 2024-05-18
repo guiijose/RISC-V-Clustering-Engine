@@ -43,13 +43,13 @@ points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6
 
 
 # Valores de centroids e k a usar na 1a parte do projeto:
-centroids:   .word 0,0
-k:           .word 1
+#centroids:   .word 0,0
+#k:           .word 1
 
 # Valores de centroids, k e L a usar na 2a parte do prejeto:
-#centroids:   .word 0,0, 10,0, 0,10
-#k:           .word 3
-#L:           .word 10
+centroids:   .word 0,0, 10,0, 0,10
+k:           .word 3
+L:           .word 10
 
 # Abaixo devem ser declarados o vetor clusters (2a parte) e outras estruturas de dados
 # que o grupo considere necessarias para a solucao:
@@ -339,18 +339,22 @@ manhattanDistance:
 # a0: cluster index
 
 nearestCluster:
-    la t0, centroids
-    li t1, 0            # t1 ira guardar a maior distancia
-    li t2, 0            # t2 = i
+    la t0, k
+    sw t0, 0(t0)
+    slli t0, t0, 1    # Numero centroides * 2 e o numero de elementos do vetor centroids
+    
+    la t1, centroids
+    li t2, 0            # t2 ira guardar a maior distancia
+    li t3, 0            # t3 = i --> ira guardar o indice do x do centroide em cada iteracao
+    li t5, 0            # t5 ira guardar o indice do cluster mais proximo 
     
     for_nearestCluster:
-        #falta condicao principal tho que é o percorrer o vetor dos centroids todo
-        slli t3, t2, 2    #i*4
-        add t4, t3, t0    #t4 = endereco base + (i*4)
+        bge t3, t0, skip_for_nearestCluster    # O loop corre enquanto i nao chegar ao numero de elementos do vetor
         
-        lw a2, 0(t4)    #carrega x do centroide
-        lw a3, 4(t4)    #carrega y do centroide
+        lw a2, 0(t1)    # Carrega x do centroide
+        lw a3, 4(t1)    # Carrega y do centroide
         
+        # Guardar contexto da funcao
         addi sp, sp, -12
         sw ra, 0(sp)
         sw a0, 4(sp)
@@ -358,22 +362,31 @@ nearestCluster:
         
         jal ra, manhattanDistance
         
-        mv t5, a0
+        mv t4, a0        # t4 tem agora a distancia do ponto dado ao centroide desta iteracao
         
+        # Restaurar contexto da funcao
         lw a1, 8(sp)
         lw a0, 4(sp)
         lw ra, 0(sp)
         addi sp, sp, 12
         
-        bgt t1, t4, for_nearestCluster   # Se distancia antiga (t1) continuar a ser a maior, reinicia logo o loop
-        mv t1, t4                        # Distancia em t4 passa a ser a maior distancia
         
-        j for_nearestCluster
-     
+        # Se distancia antiga (t2) continuar a ser a maior que a calculada, prepara a proxima iteracao do loop
+        bgt t2, t4, prox_iteracao_nearestCluster
+        # Se não, atualiza o indice em t5 para o do cluster correspondente ao centroide desta iteracao
+        srai t5, t3, 1    # t5 = t3/2 --> indice e metade do indice da coordenada x do centroide
+        mv t2, t4         # Distancia em t4 passa a ser a maior distancia
+        
+        prox_iteracao_nearestCluster:
+            addi t3, t3, 2        # Proxima coordenada x esta em i+2
+            addi t1, t1, 8        # Ou seja, avanco 2 posicoes no vetor (8 bytes)
+            j for_nearestCluster
+
     
-    
-    
-    jr ra
+    skip_for_nearestCluster:
+        mv a0, t5        # Poe o valor de retorno no registo adequado
+        jr ra
+
 
 
 ### mainKMeans
