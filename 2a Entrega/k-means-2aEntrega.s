@@ -384,8 +384,22 @@ nearestCluster:
 
     
     skip_for_nearestCluster:
+        
+        #vvvv
+        # ESTA PARTE MAYBE FICA NA MAIN?????
+        #^^^^
+        # Atualizar o vetor points_per_cluster
+        la t0, points_per_cluster
+        add t0, t0, t5        # Uso o indice do cluster mais proximo (t5) para obter o endereco desse mesmo cluster no points_per_cluster
+        
+        lw t1, 0(t0)        # Obtenho o numero de pontos nesse cluster
+        addi t1, t1, 1        # E adiciono 1
+        sw t1, 0(t0)        # Guardo o novo numero de pontos em memoria
+        
+        
         mv a0, t5        # Poe o valor de retorno no registo adequado
         jr ra
+
 
 
 
