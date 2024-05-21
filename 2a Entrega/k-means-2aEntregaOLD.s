@@ -29,16 +29,16 @@
 #points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
 
 #Input B - Cruz
-#n_points:    .word 5
-#points:      .word 4,2, 5,1, 5,2, 5,3 6,2
+n_points:    .word 5
+points:      .word 4,2, 5,1, 5,2, 5,3 6,2
 
 #Input C
 #n_points:    .word 23
 #points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7,2, 7,3, 6,8, 6,9, 7,8, 8,7, 8,8, 8,9, 9,7, 9,8
 
 #Input D
-n_points:    .word 30
-points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
+#n_points:    .word 30
+#points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
 
 
 
@@ -53,10 +53,8 @@ L:           .word 10
 
 # Abaixo devem ser declarados o vetor clusters (2a parte) e outras estruturas de dados
 # que o grupo considere necessarias para a solucao:
-clusters:	.word 0, 0, 0, 0, 0
+clusters:    .word    0, 0, 0, 0, 0, 0
 
-# Cada posicao contem o numero de pontos que pertencem ao cluster correspondente
-points_per_cluster:    .word    0, 0, 0, 0, 0
 
 
 
@@ -75,10 +73,10 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
  
 .text
     # Chama funcao principal da 1a parte do projeto
-    jal ra, mainSingleCluster
+    #jal ra, mainSingleCluster
     
     # Descomentar na 2a parte do projeto:
-    #jal mainKMeans
+    jal mainKMeans
     
     #Termina o programa (chamando chamada sistema)
     li a7, 10
@@ -111,29 +109,29 @@ printPoint:
 
     
 ### cleanScreen
-# Limpa todos os pontos do ecra
+# Limpa todos os pontos do ecr�
 # Argumentos: nenhum
 # Retorno: nenhum
 
 cleanScreen:
-    addi sp, sp, -4             # Criar espaco no stack
-    sw ra, 0(sp)                # Guardar o return adress no stack
-    li a2, white                # Carregar a cor para a2
-    li t0, 31                   # Carregar o numero de pixeis nas colunas (0-31)
+    addi sp, sp, -4                 # Criar espaco na stack
+    sw ra, 0(sp)                    # Guardar o return adress na stack
+    li a2, black                    # Carregar a cor para a2
+    li t0, 31                       # Carregar o numero de pixeis nas colunas (0-31)
     linhas:
-        li t1 31                # Carregar o numero de pixeis nas linhas (0-31)
+        li t1 31                    # Carregar o numero de pixeis nas linhas (0-31)
         colunas:
-            mv a0, t0           # Mover t0 para um argumento 
-            mv a1, t1           # Mover t1 para um argumento
-            jal printPoint      # Chamar a funcao printPoint com os argumentos (a0, a1, a2)
-            addi t1, t1, -1     # Reduzir uma posicao
-            bgez t1, colunas    # Se ainda existir uma posicao seguinte, chamar loop novamente
+            mv a0, t0               # Mover t0 para um argumento 
+            mv a1, t1               # Mover t1 para um argumento
+            jal printPoint          # Chamar a funcao printPoint com os argumentos (a0, a1, a2)
+            addi t1, t1, -1         # Reduzir uma posicao
+            bgez t1, colunas        # Se ainda existir uma posicao seguinte, chamar o loop novamente
         
-        addi t0, t0 -1          # Reduzir uma posicao
-        bgez t0, linhas         # Se ainda existir uma posicao seguinte, chamar loop novamente
-    lw ra, 0(sp)                # Carregar o return address inicial
-    addi sp, sp, 4              # Restaurar o stack para o seu estado inicial
-    jr ra                       # Return
+        addi t0, t0 -1              # Reduzir uma posicao
+        bgez t0, linhas             # Se ainda existir uma posicao seguinte, chamar o loop novamente
+    lw ra, 0(sp)                    # Carregar o return adress inicial
+    addi sp, sp, 4                  # Restaurar a stack para o seu estado inicial
+    jr ra                           # Return
 
 
 
@@ -188,7 +186,7 @@ printFromVector:
 printClusters:
     la a0, points              # Endereco do vetor points e o primeiro argumento
     mv a1, s0                  # Numero de pontos a pintar e o segundo argumento
-    li a2, 0xff0000            # Cor e o terceiro argumento
+    li a2, 0xff00ff            # Cor e o terceiro argumento
     
     
     addi sp, sp, -4            # Criar espaco no stack
@@ -214,13 +212,13 @@ printCentroids:
     la a0, centroids           # Endereco do vetor centroids e o primeiro argumento
     la a1, k                
     lw a1, 0(a1)               # Numero de pontos a pintar e o segundo argumento
-    li a2, black               # Cor e o terceiro argumento
+    li a2, 0xffff00            # Cor e o terceiro argumento
     
     
     addi sp, sp, -4            # Criar espaco no stack
     sw ra, 0(sp)               # Guardar endereco de retorno
     
-    jal ra, printFromVector    # Pinta os pontos do vetor na matriz
+    jal ra, printFromVector    #Pinta os pontos do vetor na matriz
     
 
     lw ra, 0(sp)               # Recuperar endereco de retorno
@@ -279,8 +277,8 @@ mainSingleCluster:
     lw, s0, 0(s0)
     
     #2. cleanScreen
-    addi sp, sp, -4        # Criar espaco no stack
-    sw ra, 0(sp)           # Guardar endereco de retorno
+    addi sp, sp, -4
+    sw ra, 0(sp)
     
     jal ra, cleanScreen
 
@@ -296,12 +294,17 @@ mainSingleCluster:
     #5. printCentroids
     jal ra, printCentroids
    
-    lw ra, 0(sp)           # Recuperar endereco de retorno
-    addi sp, sp, 4         # Restaurar a stack para o seu estado inicial
+    lw ra, 0(sp)
+    addi sp, sp, 4
 
 
     #6. Termina
     jr ra
+
+
+
+
+
 
 
 
@@ -331,6 +334,7 @@ manhattanDistance:
         
 
 
+
 ### nearestCluster
 # Determina o centroide mais perto de um dado ponto (x,y).
 # Argumentos:
@@ -339,68 +343,8 @@ manhattanDistance:
 # a0: cluster index
 
 nearestCluster:
-    la t0, k
-    sw t0, 0(t0)
-    slli t0, t0, 1    # Numero centroides * 2 e o numero de elementos do vetor centroids
-    
-    la t1, centroids
-    li t2, 0            # t2 ira guardar a maior distancia
-    li t3, 0            # t3 = i --> ira guardar o indice do x do centroide em cada iteracao
-    li t5, 0            # t5 ira guardar o indice do cluster mais proximo 
-    
-    for_nearestCluster:
-        bge t3, t0, skip_for_nearestCluster    # O loop corre enquanto i nao chegar ao numero de elementos do vetor
-        
-        lw a2, 0(t1)    # Carrega x do centroide
-        lw a3, 4(t1)    # Carrega y do centroide
-        
-        # Guardar contexto da funcao
-        addi sp, sp, -12
-        sw ra, 0(sp)
-        sw a0, 4(sp)
-        sw a1, 8(sp)
-        
-        jal ra, manhattanDistance
-        
-        mv t4, a0        # t4 tem agora a distancia do ponto dado ao centroide desta iteracao
-        
-        # Restaurar contexto da funcao
-        lw a1, 8(sp)
-        lw a0, 4(sp)
-        lw ra, 0(sp)
-        addi sp, sp, 12
-        
-        
-        # Se distancia antiga (t2) continuar a ser a maior que a calculada, prepara a proxima iteracao do loop
-        bgt t2, t4, prox_iteracao_nearestCluster
-        # Se não, atualiza o indice em t5 para o do cluster correspondente ao centroide desta iteracao
-        srai t5, t3, 1    # t5 = t3/2 --> indice e metade do indice da coordenada x do centroide
-        mv t2, t4         # Distancia em t4 passa a ser a maior distancia
-        
-        prox_iteracao_nearestCluster:
-            addi t3, t3, 2        # Proxima coordenada x esta em i+2
-            addi t1, t1, 8        # Ou seja, avanco 2 posicoes no vetor (8 bytes)
-            j for_nearestCluster
-
-    
-    skip_for_nearestCluster:
-        
-        #vvvv
-        # ESTA PARTE MAYBE FICA NA MAIN?????
-        #^^^^
-        # Atualizar o vetor points_per_cluster
-        la t0, points_per_cluster
-        add t0, t0, t5        # Uso o indice do cluster mais proximo (t5) para obter o endereco desse mesmo cluster no points_per_cluster
-        
-        lw t1, 0(t0)        # Obtenho o numero de pontos nesse cluster
-        addi t1, t1, 1        # E adiciono 1
-        sw t1, 0(t0)        # Guardo o novo numero de pontos em memoria
-        
-        
-        mv a0, t5        # Poe o valor de retorno no registo adequado
-        jr ra
-
-
+    # POR IMPLEMENTAR (2a parte)
+    jr ra
 
 
 ### mainKMeans
