@@ -62,7 +62,7 @@ points_per_cluster:    .word    0, 0, 0, 0, 0
 
 #Definicoes de cores a usar no projeto 
 
-colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0, 1, 2, etc.
+colors:      .word 0xff0000, 0x00ff00, 0x0000ff, 0  # Cores dos pontos do cluster 0, 1, 2, etc.
 
 .equ         black      0
 .equ         white      0xffffff
@@ -200,8 +200,56 @@ printClusters:
     addi sp, sp, 4             # Restaurar a stack para o seu estado inicial
     
     
+    jr ra  
+
+
+
+printClusters2parte:
+    la a0, points              # Endereco do vetor points
+    la a1, clusters            # Endereco do vetor clusters
+    la a2, colors              # Endereco do vetor colors
+    lw a3, n_points            # Numero de pontos a pintar
+    
+    addi sp, sp, -4            # Criar espaco no stack
+    sw ra, 0(sp)               # Guardar endereco de retorno
+    
+    
+    # Loop para percorrer todos os pontos
+loop_points:
+    beqz a3, end_loop          # Se a3 (contador de pontos) for zero, sair do loop
+    
+    lw t0, 0(a0)               # Carregar o ponto atual (coordenada x)
+    lw t1, 4(a0)               # Carregar o ponto atual (coordenada y)
+    lw t2, 0(a1)               # Carregar o indice do cluster atual de clusters
+    
+    slli t2, t2, 2             # Multiplicar o indice do cluster por 4 (tamanho da palavra) para obter o offset
+    add t2, t2, a2             # Adicionar o offset ao endereco base do vetor colors
+    lw t3, 0(t2)               # Carregar a cor correspondente ao cluster
+    
+    # Preparar argumentos para printPoint
+    mv a0, t0                  # Coordenada x
+    mv a1, t1                  # Coordenada y
+    mv a2, t3                  # Cor correspondente ao cluster
+    addi sp, sp, -4            # Criar espaco no stack
+    sw ra, 0(sp)               # Guardar endereco de retorno
+
+    jal ra, printPoint         # Pinta o ponto na matriz
+    
+    lw ra, 0(sp)               # Recuperar endereco de retorno
+    addi sp, sp, 4             # Restaurar a stack para o seu estado inicial
+    
+    addi a0, a0, 8             # Avançar para o próximo ponto em points (2 palavras = 8 bytes)
+    addi a1, a1, 4             # Avançar para o próximo indice em clusters (1 palavra = 4 bytes)
+    addi a3, a3, -1            # Decrementar o contador de pontos
+    
+    j loop_points              # Repetir o loop
+    
+end_loop:
+    lw ra, 0(sp)               # Recuperar endereco de retorno
+    addi sp, sp, 4             # Restaurar a stack para o seu estado inicial
+    
     jr ra
-  
+
 
 
 ### printCentroids
