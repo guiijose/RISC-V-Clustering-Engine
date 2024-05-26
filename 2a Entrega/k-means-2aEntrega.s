@@ -29,16 +29,16 @@
 #points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
 
 #Input B - Cruz
-#n_points:    .word 5
-#points:      .word 4,2, 5,1, 5,2, 5,3 6,2
+n_points:    .word 5
+points:      .word 4,2, 5,1, 5,2, 5,3 6,2
 
 #Input C
 #n_points:    .word 23
 #points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7,2, 7,3, 6,8, 6,9, 7,8, 8,7, 8,8, 8,9, 9,7, 9,8
 
 #Input D
-n_points:    .word 30
-points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
+#n_points:    .word 30
+#points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
 
 
 
@@ -47,7 +47,7 @@ points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6
 #k:           .word 1
 
 # Valores de centroids, k e L a usar na 2a parte do prejeto:
-centroids:   .word 0,0, 10,0, 0,10
+centroids:   .word 9,10, 11,12, 13,14
 k:           .word 3
 L:           .word 10
 
@@ -78,10 +78,10 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff, 0  # Cores dos pontos do cluste
  
 .text
     # Chama funcao principal da 1a parte do projeto
-    jal ra, mainSingleCluster
+    #jal ra, mainSingleCluster
     
     # Descomentar na 2a parte do projeto:
-    #jal mainKMeans
+    jal ra, mainKMeans
     
     #Termina o programa (chamando chamada sistema)
     li a7, 10
@@ -380,6 +380,61 @@ mainSingleCluster:
 
 
 
+### initializeCentroids
+# Inicializa os valores iniciais do vetor centroids. Escolhe cada coordenada de forma pseudo-aleatoria.
+
+# E usado um Linear Congruential Generator para gerar uma sequencia de valores que vao ser as coordenadas.
+# E usado o tempo desde o Unix epoch como seed para o LCG para nao ser gerada sempre a mesma sequencia.
+# Os outros parametros escolhidos foram dois numeros primos, 7 como coeficiente e 13 como incremento.
+# O modulo e 32 para garantir que as coordenadas estao dentro da grelha.
+
+# O LCG fica definido pela seguinte recorrencia:
+# X0 = tempo desde Unix epoch (ms)
+# Xn+1 = (7Xn + 13) mod 32
+
+# Argumentos: nenhum
+# Retorno: nenhum
+
+initializeCentroids:
+    li a7, 30          # Esta systemcall retorna o tempo em milisegundos desde o Unix epoch para a0 e a1
+    ecall              # a0 ficara com os 32 bits inferiores do tempo em ms. Como sao esses os que mais mudam, sao os que irei usar
+    
+    bgez a0, skip_abs_epoch
+    not a0, a0         # Os primeiros 32 bits costumam vir como negativos e preciso do valor absoluto
+    
+    skip_abs_epoch:    # Nao e um loop, e apenas para o caso dos primeiros 32 bits do tempo virem ja como positivos
+    la t0, k
+    lw t0, 0(t0)
+    slli t0, t0, 1     # Vetor centroides tera k*2 elementos pois sao 2 coordenadas por centroide
+        
+    li t1, 0           # i = 0
+    
+    la t2, centroids
+    li t3, 7
+    li t4, 32
+    
+    for_initializeCentroids:
+        bge t1, t0, skip_for_initializeCentroids    # Loop for corre enquanto i < k*2 (numero de elementos vetor)
+        
+        mul t5, t3, a0        # Multiplica a seed (ou o valor anterior da sequencia) pelo coeficiente
+        addi t5, t5, 13       # Adiciona o incremento
+        rem t5, t5, t4        # Faz o modulo de 32
+        
+        sw t5, 0(t2)          # Guarda a coordenada no vetor
+        addi t2, t2, 4        # Avanca o endereco para o endereco da posicao seguinte
+        addi t1, t1, 1        # i++
+        mv a0, t5             # Poe coordenada como o ultimo valor obtido da sequencia
+        
+        j for_initializeCentroids    # Salta de novo para o loop
+    
+        
+    skip_for_initializeCentroids:
+        jr ra
+    
+
+
+
+
 ### manhattanDistance
 # Calcula a distancia de Manhattan entre (x0,y0) e (x1,y1)
 # Argumentos:
@@ -484,5 +539,16 @@ nearestCluster:
 # Retorno: nenhum
 
 mainKMeans:  
-    # POR IMPLEMENTAR (2a parte)
+    addi sp, sp, -4
+    sw ra, 0(sp)
+    
+    jal ra, initializeCentroids
+
+    jal ra, cleanScreen
+    
+    jal ra, printCentroids
+
+    lw ra, 0(sp)
+    addi sp, sp, 4
+    
     jr ra
