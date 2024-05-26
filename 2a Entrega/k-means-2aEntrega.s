@@ -47,7 +47,7 @@ points:      .word 4,2, 5,1, 5,2, 5,3 6,2
 #k:           .word 1
 
 # Valores de centroids, k e L a usar na 2a parte do prejeto:
-centroids:   .word 9,10, 11,12, 13,14
+centroids:   .word 0,0, 0,0, 0,0
 k:           .word 3
 L:           .word 10
 
