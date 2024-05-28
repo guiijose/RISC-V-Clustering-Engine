@@ -133,7 +133,27 @@ cleanScreen:
     addi sp, sp, 4                  # Restaurar a stack para o seu estado inicial
     jr ra                           # Return
 
+novoCleanScreen:
+    addi sp, sp, -4                 # Criar espaco na stack
+    sw ra, 0(sp)                    # Guardar o return adress na stack
+    la t0, pontos                   # Carregar o endereco do vetor pontos
+    li t1, num_pontos               # Carregar o numero de pontos
 
+    loop_pontos:
+        beqz t1, end_loop               # Se t1 for 0, terminar loop
+        lw a0, 0(t0)                    # Carregar o valor de x do ponto
+        lw a1, 4(t0)                    # Carregar o valor de y do ponto
+        li a2, white                    # Carregar a cor para a2
+        jal printPoint                  # Chamar a funcao printPoint com os argumentos (a0, a1, a2)
+        addi t0, t0, 8                  # Avancar para o proximo ponto no vetor
+        addi t1, t1, -1                 # Reduzir o contador de pontos
+        j loop_pontos                   # Repetir o loop
+
+    end_loop:
+        lw ra, 0(sp)                    # Carregar o return adress inicial
+        addi sp, sp, 4                  # Restaurar a stack para o seu estado inicial
+       jr ra                           # Return
+    
 
 ### printFromVector:
 # FUNCAO AUXILIAR
@@ -211,8 +231,8 @@ printClusters2parte:
     
     
     # Loop para percorrer todos os pontos
-loop_points:
-    beqz a3, end_loop          # Se a3 (contador de pontos) for zero, sair do loop
+looppoints:
+    beqz a3, endloop          # Se a3 (contador de pontos) for zero, sair do loop
     
     lw t0, 0(a0)               # Carregar o ponto atual (coordenada x)
     lw t1, 4(a0)               # Carregar o ponto atual (coordenada y)
@@ -238,9 +258,9 @@ loop_points:
     addi a1, a1, 4             # Avançar para o próximo indice em clusters (1 palavra = 4 bytes)
     addi a3, a3, -1            # Decrementar o contador de pontos
     
-    j loop_points              # Repetir o loop
+    j looppoints              # Repetir o loop
     
-end_loop:
+endloop:
     lw ra, 0(sp)               # Recuperar endereco de retorno
     addi sp, sp, 4             # Restaurar a stack para o seu estado inicial
     
