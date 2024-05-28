@@ -112,13 +112,13 @@ printPoint:
         jr ra
 
 
-    
-### cleanScreen
-# Limpa todos os pontos do ecra
+# initializeScreen
+# FUNCAO AUXILIAR    
+# Pinta o ecra todo de branco
 # Argumentos: nenhum
 # Retorno: nenhum
-
-cleanScreen:
+    
+initializeScreen:
     addi sp, sp, -4             # Criar espaco no stack
     sw ra, 0(sp)                # Guardar o return adress no stack
     li a2, white                # Carregar a cor para a2
@@ -138,72 +138,37 @@ cleanScreen:
     addi sp, sp, 4              # Restaurar o stack para o seu estado inicial
     jr ra                       # Return
 
+    
+    
+### cleanScreen
+# Limpa todos os pontos do ecra
+# Argumentos: nenhum
+# Retorno: nenhum
 
-novoCleanScreen:
+cleanScreen:
     addi sp, sp, -4                 # Criar espaco na stack
     sw ra, 0(sp)                    # Guardar o return adress na stack
     la t0, points                   # Carregar o endereco do vetor pontos
     la t1, n_points               # Carregar o numero de pontos
     lw t1, 0(t1)
 
-    loop_pontos:
-        beqz t1, end_loop               # Se t1 for 0, terminar loop
+    loop_pontos_cleanScreen:
+        beqz t1, end_loop_cleanScreen               # Se t1 for 0, terminar loop
         lw a0, 0(t0)                    # Carregar o valor de x do ponto
         lw a1, 4(t0)                    # Carregar o valor de y do ponto
         li a2, white                    # Carregar a cor para a2
         jal printPoint                  # Chamar a funcao printPoint com os argumentos (a0, a1, a2)
         addi t0, t0, 8                  # Avancar para o proximo ponto no vetor
         addi t1, t1, -1                 # Reduzir o contador de pontos
-        j loop_pontos                   # Repetir o loop
+        j loop_pontos_cleanScreen                   # Repetir o loop
 
-    end_loop:
+    end_loop_cleanScreen:
         lw ra, 0(sp)                    # Carregar o return adress inicial
         addi sp, sp, 4                  # Restaurar a stack para o seu estado inicial
-       jr ra                           # Return
+        jr ra                           # Return
  
 
 
-### printFromVector:
-# FUNCAO AUXILIAR
-# Percorre um vetor de pontos e pinta-os na LED matrix
-# Argumentos:
-# a0: endereco do vetor
-# a1: numero de pontos a pintar
-# a2: cor para os pontos
-# Retorno: nenhum
-
-printFromVector:
-    mv t0, a0                                   # t0 = endereco base do vetor
-    mv t1, a1                                   # t1 = numero de pontos
-    slli t1, t1, 1                              # t1 = numero de pontos * 2 = numero de elementos no vetor
-    li t2, 0                                    # t2 = i
-    
-    for_printFromVector:
-        bge t2, t1, skip_for_printFromVector    # Loop for corre apenas enquanto i < numero de elementos do vetor
-        
-        slli t3, t2, 2                          # i*4
-        add t4, t0, t3                          # Endereco base + (i*4)
-        lw a0, 0(t4)                            # Coordenada x e o primeiro argumento do printPoint
-        lw a1, 4(t4)                            # Coordenada y e o segundo argumento
-        
-        #A cor ja esta no a2
-        
-        #(printPoint nao interfere com registos temporarios)
-        addi sp, sp, -4                         # Criar espaco no stack
-        sw ra, 0(sp)                            # Guardar endereco de retorno
-
-        jal ra, printPoint                      # Pinta ponto na matriz
-        
-        lw ra, 0(sp)                            # Recuperar endereco de retorno
-        addi sp, sp, 4                          # Restaurar a stack para o seu estado inicial
-        
-        
-        addi t2, t2, 2                          # Proximo x esta em i+2
-        j for_printFromVector
-        
-    skip_for_printFromVector:
-        jr ra
-        
 
     
 ### printClusters
@@ -212,25 +177,6 @@ printFromVector:
 # Retorno: nenhum
 
 printClusters:
-    la a0, points              # Endereco do vetor points e o primeiro argumento
-    mv a1, s0                  # Numero de pontos a pintar e o segundo argumento
-    li a2, 0xff0000            # Cor e o terceiro argumento
-    
-    
-    addi sp, sp, -4            # Criar espaco no stack
-    sw ra, 0(sp)               # Guardar endereco de retorno
-    
-    jal ra, printFromVector    # Pinta os pontos do vetor na matriz
-    
-    lw ra, 0(sp)               # Recuperar endereco de retorno
-    addi sp, sp, 4             # Restaurar a stack para o seu estado inicial
-    
-    
-    jr ra  
-
-
-
-printClusters2parte:
     la a0, points              # Endereco do vetor points
     la a1, clusters            # Endereco do vetor clusters
     la a2, colors              # Endereco do vetor colors
@@ -241,8 +187,8 @@ printClusters2parte:
     
     
     # Loop para percorrer todos os pontos
-loop_points:
-    beqz a3, end_loop          # Se a3 (contador de pontos) for zero, sair do loop
+loop_points_printClusters:
+    beqz a3, end_loop_printClusters          # Se a3 (contador de pontos) for zero, sair do loop
     
     lw t0, 0(a0)               # Carregar o ponto atual (coordenada x)
     lw t1, 4(a0)               # Carregar o ponto atual (coordenada y)
@@ -268,9 +214,9 @@ loop_points:
     addi a1, a1, 4             # Avançar para o próximo indice em clusters (1 palavra = 4 bytes)
     addi a3, a3, -1            # Decrementar o contador de pontos
     
-    j loop_points              # Repetir o loop
+    j loop_points_printClusters              # Repetir o loop
     
-end_loop:
+end_loop_printClusters:
     lw ra, 0(sp)               # Recuperar endereco de retorno
     addi sp, sp, 4             # Restaurar a stack para o seu estado inicial
     
@@ -278,30 +224,48 @@ end_loop:
 
 
 
-### printCentroids
+### printCentroids:
 # Pinta os centroides na LED matrix
 # Nota: deve ser usada a cor preta (black) para todos os centroides
 # Argumentos: nenhum
 # Retorno: nenhum
 
 printCentroids:
-    la a0, centroids           # Endereco do vetor centroids e o primeiro argumento
-    la a1, k                
-    lw a1, 0(a1)               # Numero de pontos a pintar e o segundo argumento
-    li a2, black               # Cor e o terceiro argumento
+    la t0, centroids           # t0 = endereco base do vetor
+    la t1, k                
+    lw a1, 0(a1)               # t1 = numero de pontos
+    slli t1, t1, 1             # t1 = numero de pontos * 2 = numero de elementos no vetor
     
+    li a2, black               # Cor e o terceiro argumento do printPoint
     
-    addi sp, sp, -4            # Criar espaco no stack
-    sw ra, 0(sp)               # Guardar endereco de retorno
+    li t2, 0                                    # t2 = i
     
-    jal ra, printFromVector    # Pinta os pontos do vetor na matriz
-    
+    for_printCentroids:
+        bge t2, t1, skip_for_printCentroids    # Loop for corre apenas enquanto i < numero de elementos do vetor
+        
+        slli t3, t2, 2                          # i*4
+        add t4, t0, t3                          # Endereco base + (i*4)
+        lw a0, 0(t4)                            # Coordenada x e o primeiro argumento do printPoint
+        lw a1, 4(t4)                            # Coordenada y e o segundo argumento
+        
+        #A cor ja esta no a2
+        
+        #(printPoint nao interfere com registos temporarios)
+        addi sp, sp, -4                         # Criar espaco no stack
+        sw ra, 0(sp)                            # Guardar endereco de retorno
 
-    lw ra, 0(sp)               # Recuperar endereco de retorno
-    addi sp, sp, 4             # Restaurar a stack para o seu estado inicial
-    
-    
-    jr ra
+        jal ra, printPoint                      # Pinta ponto na matriz
+        
+        lw ra, 0(sp)                            # Recuperar endereco de retorno
+        addi sp, sp, 4                          # Restaurar a stack para o seu estado inicial
+        
+        
+        addi t2, t2, 2                          # Proximo x esta em i+2
+        j for_printCentroids
+        
+    skip_for_printCentroids:
+        jr ra
+        
     
     
     
@@ -360,46 +324,7 @@ calculateCentroids:
 
 
 
-### mainSingleCluster
-# Funcao principal da 1a parte do projeto.
-# Argumentos: nenhum
-# Retorno: nenhum
 
-mainSingleCluster:
-
-    #1. Coloca k=1 (caso nao esteja a 1)
-    la t0, k
-    li t1, 1
-    sw t1, 0(t0)
-
-    # Guarda endereco n_points em s0 pois vai ser usado varias vezes
-    la s0, n_points
-    lw, s0, 0(s0)
-    
-    #2. cleanScreen
-    addi sp, sp, -4        # Criar espaco no stack
-    sw ra, 0(sp)           # Guardar endereco de retorno
-    
-    jal ra, cleanScreen
-
-
-    #3. printClusters
-    jal ra, printClusters
-
-    
-    #4. calculateCentroids    
-    jal ra, calculateCentroids
-
-
-    #5. printCentroids
-    jal ra, printCentroids
-   
-    lw ra, 0(sp)           # Recuperar endereco de retorno
-    addi sp, sp, 4         # Restaurar a stack para o seu estado inicial
-
-
-    #6. Termina
-    jr ra
 
 
 
@@ -535,21 +460,23 @@ nearestCluster:
 
     
     skip_for_nearestCluster:
-        
-        #vvvv
-        # ESTA PARTE MAYBE FICA NA MAIN?????
-        #^^^^
-        # Atualizar o vetor points_per_cluster
-#        la t0, points_per_cluster
-#        add t0, t0, t5        # Uso o indice do cluster mais proximo (t5) para obter o endereco desse mesmo cluster no points_per_cluster
-#        
-#        lw t1, 0(t0)        # Obtenho o numero de pontos nesse cluster
-#        addi t1, t1, 1        # E adiciono 1
-#        sw t1, 0(t0)        # Guardo o novo numero de pontos em memoria
-        
-        
         mv a0, t5        # Poe o valor de retorno no registo adequado
         jr ra
+
+
+# updateClusters
+
+
+updateClusters:
+    la t0, points
+    la t1, k
+    lw t1, 0(t1)
+    slli t1, t1, 1        # k*2 e o numero de elementos de points
+
+    li t2, 0    # i = 0
+    
+    for_updateClusters:
+        bge t2, t1, 
 
 
 
@@ -559,17 +486,66 @@ nearestCluster:
 # Argumentos: nenhum
 # Retorno: nenhum
 
-mainKMeans:  
+mainKMeans:
     addi sp, sp, -4
     sw ra, 0(sp)
-    
-    jal ra, initializeCentroids
+  
+    jal ra initializeScreen
 
-    jal ra, cleanScreen
+    jal ra initializeCentroids
     
-    jal ra, printCentroids
-
+    jal ra printClusters
+    jal ra printCentroids
+    
+    la t0, L
+    lw t0, 0(t0)
+    li t1, 0
+    
+    main_loop:
+        beq t1, t0, skip_main_loop
+        
+        addi sp, sp, -8
+        sw t0, 0(sp)
+        sw t1, 4(sp)
+        
+        jal ra updateClusters
+        
+        jal ra cleanScreen
+        
+        jal ra printClusters
+        
+        jal ra printCentroids
+        
+        jal ra calculateCentroids
+        beqz a0, skip_main_loop
+        
+        lw t1, 4(sp)
+        lw t0, 0(sp)
+        addi sp, sp, 8
+        
+        addi t1, t1, 1    # i++
+        
+        j main_loop
+        
+    skip_main_loop:
+    
+    
     lw ra, 0(sp)
     addi sp, sp, 4
-    
     jr ra
+    
+    #addi sp, sp, -4
+    #sw ra, 0(sp)
+    
+    #jal ra, initializeScreen
+    
+    #jal ra, initializeCentroids
+    
+    #jal ra, printCentroids
+    
+    #jal ra, cleanScreen
+
+    #lw ra, 0(sp)
+    #addi sp, sp, 4
+    
+    #jr ra
