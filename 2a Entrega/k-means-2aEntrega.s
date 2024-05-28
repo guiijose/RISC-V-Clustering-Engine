@@ -399,10 +399,6 @@ initializeCentroids:
     li a7, 30          # Esta systemcall retorna o tempo em milisegundos desde o Unix epoch para a0 e a1
     ecall              # a0 ficara com os 32 bits inferiores do tempo em ms. Como sao esses os que mais mudam, sao os que irei usar
     
-    bgez a0, skip_abs_epoch
-    neg a0, a0         # Os primeiros 32 bits costumam vir como negativos e preciso do valor absoluto
-    
-    skip_abs_epoch:    # Nao e um loop, e apenas para o caso dos primeiros 32 bits do tempo virem ja como positivos
     la t0, k
     lw t0, 0(t0)
     slli t0, t0, 1     # Vetor centroides tera k*2 elementos pois sao 2 coordenadas por centroide
@@ -420,12 +416,16 @@ initializeCentroids:
         addi t5, t5, 13       # Adiciona o incremento
         rem t5, t5, t4        # Faz o modulo de 32
         
-        sw t5, 0(t2)          # Guarda a coordenada no vetor
-        addi t2, t2, 4        # Avanca o endereco para o endereco da posicao seguinte
-        addi t1, t1, 1        # i++
-        mv a0, t5             # Poe coordenada como o ultimo valor obtido da sequencia
+        bgez t5, skip_abs_coord    # Caso a coordenada calculada seja positiva salta-se a proxima instrucao
+        neg t5, t5                 # Caso seja negativa calcula-se o simetrico
         
-        j for_initializeCentroids    # Salta de novo para o loop
+        skip_abs_coord:
+            sw t5, 0(t2)          # Guarda a coordenada no vetor
+            addi t2, t2, 4        # Avanca o endereco para o endereco da posicao seguinte
+            addi t1, t1, 1        # i++
+            mv a0, t5             # Poe coordenada como o ultimo valor obtido da sequencia
+        
+            j for_initializeCentroids    # Salta de novo para o loop
     
         
     skip_for_initializeCentroids:
@@ -449,13 +449,13 @@ manhattanDistance:
         neg a0, a0                    # Se for negativa, fica o simetrico
         
         skip1_manhattan:
-        sub a1, a3, a1                # y0 - y1
-        bgez a1, skip2_manhattan      # Se diferenca for positiva, salta a proxima instrucao
-        neg a1, a1                    # Se for negativa, fica o simetrico
+            sub a1, a3, a1                # y0 - y1
+            bgez a1, skip2_manhattan      # Se diferenca for positiva, salta a proxima instrucao
+            neg a1, a1                    # Se for negativa, fica o simetrico
         
-        skip2_manhattan:
-        add a0, a0, a1                # A distancia e a soma das duas diferencas em valor absoluto
-        jr ra
+            skip2_manhattan:
+                add a0, a0, a1            # A distancia e a soma das duas diferencas em valor absoluto
+                jr ra
         
 
 
