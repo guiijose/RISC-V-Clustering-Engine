@@ -77,10 +77,6 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff, 0  # Cores dos pontos do cluste
 # Codigo
  
 .text
-    # Chama funcao principal da 1a parte do projeto
-    #jal ra, mainSingleCluster
-    
-    # Descomentar na 2a parte do projeto:
     jal ra, mainKMeans
     
     #Termina o programa (chamando chamada sistema)
@@ -112,6 +108,7 @@ printPoint:
         jr ra
 
 
+
 # initializeScreen
 # FUNCAO AUXILIAR    
 # Pinta o ecra todo de branco
@@ -141,6 +138,8 @@ initializeScreen:
     
     
 ### cleanScreen
+# OPTIMIZATION
+
 # Limpa todos os pontos do ecra
 # Argumentos: nenhum
 # Retorno: nenhum
