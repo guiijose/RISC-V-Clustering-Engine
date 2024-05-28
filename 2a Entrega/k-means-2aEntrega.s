@@ -297,33 +297,33 @@ calculateCentroids:
     loop_calculateCentroids:
         beqz a0, finish_calculateCentroids     # Verifica se ha pontos a analisar
         
-        lw t5, 0(t1)                           # load do numero do cluster
+        lw t5, 0(t1)                           # Load do numero do cluster
         
-        add t2, t2, t5                         # adiciona o valor do cluster ao address do n_points clusters
-        lw t6, 0(t2)                           # load do numero de pontos do cluster
-        addi t6, t6, 1                         # incrementa o numero de pontos do cluster
-        sw t6, 0(t2)                           # guarda o valor
-        sub t2, t2, t5                         # da reset do address do vetor n_points_clusters
+        add t2, t2, t5                         # Adiciona o valor do cluster ao address do n_points clusters
+        lw t6, 0(t2)                           # Load do numero de pontos do cluster
+        addi t6, t6, 1                         # Incrementa o numero de pontos do cluster
+        sw t6, 0(t2)                           # Guarda o valor
+        sub t2, t2, t5                         # Da reset do address do vetor n_points_clusters
         
-        slli t5, t5, 1                         # multiplica por 2 porque ha 2 coordenadas
-        add t3, t3, t5                         # adiciona ao address do cluster
+        slli t5, t5, 1                         # Multiplica por 2 porque ha 2 coordenadas
+        add t3, t3, t5                         # Adiciona ao address do cluster
         
-        lw t4, 0(t0)                           # load da coordenada x
+        lw t4, 0(t0)                           # Load da coordenada x
         
-        lw t6, 0(t3)                           # da load da soma das coordenadas x
-        add t6, t6, t4                         # soma a coordenada x
-        sw t6, 0(t3)                           # guarda a soma
+        lw t6, 0(t3)                           # Da load da soma das coordenadas x
+        add t6, t6, t4                         # Soma a coordenada x
+        sw t6, 0(t3)                           # Guarda a soma
         
-        lw t4, 4(t0)                           # load da coordenada y
+        lw t4, 4(t0)                           # Load da coordenada y
+    
+        lw t6, 4(t3)                           # Load da soma das coordenadas y do cluster
+        add t6, t6, t4                         # Adiciona a coordenada do ponto a soma
+        sw t6, 4(t3)                           # Guarda a soma
         
-        lw t6, 4(t3)                           # load da soma das coordenadas y do cluster
-        add t6, t6, t4                         # adiciona a coordenada do ponto a soma
-        sw t6, 4(t3)                           # guarda a soma
-        
-        sub t3, t3, t5                         # da reset no address do vetor sum_centroids
-        addi t0, t0, 8                         # passa o address do vetor points para o proximo
-        addi t1, t1, 4                         # passa o address do vetor clusters para o proximo ponto
-        addi a0, a0, -1                        # decrementa o numero de pontos que ainda falta analisar
+        sub t3, t3, t5                         # Da reset no address do vetor sum_centroids
+        addi t0, t0, 8                         # Passa o address do vetor points para o proximo
+        addi t1, t1, 4                         # Passa o address do vetor clusters para o proximo ponto
+        addi a0, a0, -1                        # Decrementa o numero de pontos que ainda falta analisar
                 
         j loop_calculateCentroids              # Volta ao inicio
 
@@ -400,7 +400,7 @@ initializeCentroids:
     ecall              # a0 ficara com os 32 bits inferiores do tempo em ms. Como sao esses os que mais mudam, sao os que irei usar
     
     bgez a0, skip_abs_epoch
-    not a0, a0         # Os primeiros 32 bits costumam vir como negativos e preciso do valor absoluto
+    neg a0, a0         # Os primeiros 32 bits costumam vir como negativos e preciso do valor absoluto
     
     skip_abs_epoch:    # Nao e um loop, e apenas para o caso dos primeiros 32 bits do tempo virem ja como positivos
     la t0, k
@@ -444,20 +444,18 @@ initializeCentroids:
 # a0: distance
 
 manhattanDistance:
-    # POR IMPLEMENTAR (2a parte)
-        sub a0, a2, a0
-        sub a1, a3, a1
-        bge a0, x0, Skip
-        bge a1, x0, Skip
+        sub a0, a2, a0                # x0 - x1
+        bgez a0, skip1_manhattan      # Se diferenca for positiva, salta a proxima instrucao
+        neg a0, a0                    # Se for negativa, fica o simetrico
         
-        not a0, a0
-        addi a0, a0, 1
-        not a1, a1
-        addi a1, a1, 1
+        skip1_manhattan:
+        sub a1, a3, a1                # y0 - y1
+        bgez a1, skip2_manhattan      # Se diferenca for positiva, salta a proxima instrucao
+        neg a1, a1                    # Se for negativa, fica o simetrico
         
-        Skip:
-                add, a0, a0, a1
-                jr ra
+        skip2_manhattan:
+        add a0, a0, a1                # A distancia e a soma das duas diferencas em valor absoluto
+        jr ra
         
 
 
