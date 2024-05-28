@@ -142,8 +142,9 @@ cleanScreen:
 novoCleanScreen:
     addi sp, sp, -4                 # Criar espaco na stack
     sw ra, 0(sp)                    # Guardar o return adress na stack
-    la t0, pontos                   # Carregar o endereco do vetor pontos
-    li t1, num_pontos               # Carregar o numero de pontos
+    la t0, points                   # Carregar o endereco do vetor pontos
+    la t1, n_points               # Carregar o numero de pontos
+    lw t1, 0(t1)
 
     loop_pontos:
         beqz t1, end_loop               # Se t1 for 0, terminar loop
