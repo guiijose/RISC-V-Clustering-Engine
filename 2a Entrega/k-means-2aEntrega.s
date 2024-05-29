@@ -29,12 +29,12 @@
 #points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
 
 #Input B - Cruz
-n_points:    .word 5
-points:      .word 4,2, 5,1, 5,2, 5,3 6,2
+#n_points:    .word 5
+#points:      .word 4,2, 5,1, 5,2, 5,3 6,2
 
 #Input C
-#n_points:    .word 23
-#points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7,2, 7,3, 6,8, 6,9, 7,8, 8,7, 8,8, 8,9, 9,7, 9,8
+n_points:    .word 23
+points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7,2, 7,3, 6,8, 6,9, 7,8, 8,7, 8,8, 8,9, 9,7, 9,8
 
 #Input D
 #n_points:    .word 30
@@ -79,8 +79,9 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
     jal ra, mainKMeans
     
     #Termina o programa (chamando chamada sistema)
-    li a7, 10
-    ecall
+    finish_program:
+        li a7, 10
+        ecall
 
 
 
@@ -175,52 +176,39 @@ cleanScreen:
 # Retorno: nenhum
 
 printClusters:
-    la a0, points              # Endereco do vetor points
-    la a1, clusters            # Endereco do vetor clusters
-    la a2, colors              # Endereco do vetor colors
-    la a3, n_points
-    lw a3, 0(a3)               # Numero de pontos a pintar
-    
-    addi sp, sp, -4            # Criar espaco no stack
-    sw ra, 0(sp)               # Guardar endereco de retorno
-    
+    la t0, points              # Endereco do vetor points
+    la t1, clusters            # Endereco do vetor clusters
+    la t2, colors              # Endereco do vetor colors
+    la t3, n_points
+    lw t3, 0(t3)               # Numero de pontos a pintar 
     
     # Loop para percorrer todos os pontos
 loop_points_printClusters:
-    beqz a3, end_loop_printClusters          # Se a3 (contador de pontos) for zero, sair do loop
+    beqz t3, end_loop_printClusters          # Se a3 (contador de pontos) for zero, sair do loop
     
-    lw t0, 0(a0)               # Carregar o ponto atual (coordenada x)
-    lw t1, 4(a0)               # Carregar o ponto atual (coordenada y)
-    lw t2, 0(a1)               # Carregar o indice do cluster atual de clusters
+    lw a0, 0(t0)               # Carregar coordenada x do ponto atual para o 1o argumento do printPoint
+    lw a1, 4(t0)               # Carregar coordenada y para o 2o argumento
     
-    slli t2, t2, 2             # Multiplicar o indice do cluster por 4 (tamanho da palavra) para obter o offset
-    add t2, t2, a2             # Adicionar o offset ao endereco base do vetor colors
-    lw t3, 0(t2)               # Carregar a cor correspondente ao cluster
+    lw t4, 0(t1)               # Carregar o indice do cluster atual do vetor clusters
+    slli t4, t4, 2             # Multiplicar o indice do cluster por 4 (tamanho da palavra) para obter o offset
+    add t4, t4, t2             # Adicionar o offset ao endereco base do vetor colors
+    lw a2, 0(t4)               # Carregar a cor correspondente ao cluster para o 3o argumento do printPoint
     
-    # Preparar argumentos para printPoint
-    mv a0, t0                  # Coordenada x
-    mv a1, t1                  # Coordenada y
-    mv a2, t3                  # Cor correspondente ao cluster
-    addi sp, sp, -8            # Criar espaco no stack
+    addi sp, sp, -4            # Criar espaco no stack
     sw ra, 0(sp)               # Guardar endereco de retorno
-    sw a3, 4(sp)               # Guardar o contador do loop
 
     jal ra, printPoint         # Pinta o ponto na matriz
     
-    lw a3, 4(sp)               # Recuperar o contador do loop
-    lw ra, 0(sp)               # Recuperar endereco de retorno
-    addi sp, sp, 8             # Restaurar a stack para o seu estado inicial
-    
-    addi a0, a0, 8             # Avançar para o próximo ponto em points (2 palavras = 8 bytes)
-    addi a1, a1, 4             # Avançar para o próximo indice em clusters (1 palavra = 4 bytes)
-    addi a3, a3, -1            # Decrementar o contador de pontos
-    
-    j loop_points_printClusters              # Repetir o loop
-    
-end_loop_printClusters:
     lw ra, 0(sp)               # Recuperar endereco de retorno
     addi sp, sp, 4             # Restaurar a stack para o seu estado inicial
     
+    addi t0, t0, 8             # Avançar para o próximo ponto em points (2 palavras = 8 bytes)
+    addi t1, t1, 4             # Avançar para o próximo indice em clusters (1 palavra = 4 bytes)
+    addi t3, t3, -1            # Decrementar o contador de pontos
+    
+    j loop_points_printClusters              # Repetir o loop
+    
+end_loop_printClusters:   
     jr ra
 
 
@@ -295,7 +283,9 @@ calculateCentroids:
         la t1, clusters                            # Load do address do vetor clusters
         la t2, n_points_clusters                   # Load do address do vetor n_points_clusters
         la t3, sum_centroids                       # Load do address do vetor para somar as coordenadas           
-        mv a0, s0                                  # Copia do numero de pontos
+        la a0, n_points
+        lw a0, 0(a0)
+        #mv a0, s0                                  # Copia do numero de pontos
 
     loop_calculateCentroids:
         beqz a0, finish_calculateCentroids     # Verifica se ha pontos a analisar
@@ -331,7 +321,7 @@ calculateCentroids:
         j loop_calculateCentroids              # Volta ao inicio
 
     finish_calculateCentroids:
-    beqz t5, mainKMeans                       # Verifica se ainda ha centroids para dividir pelo numero de pontos
+    beqz t5, finish_program                   # Verifica se ainda ha centroids para dividir pelo numero de pontos
     la t5, k                                  # Load do address do k
     mv a0, x0                                 # Se a0 e 0, ate agora nenhum ponto foi diferente, se e 1 e porque houve alteracoes nos centroids
     slli a0, a0, 1                            # Multiplica k por 2
@@ -566,15 +556,20 @@ updateClusters:
 # Retorno: nenhum
 
 mainKMeans:
+    
+    #guardar k e n_points em s0 e s1 ou assim -> mudar ao longo do codigo todo sempre que acedemos a memoria para isto
+    
     addi sp, sp, -4
     sw ra, 0(sp)
   
-    #jal ra initializeScreen
-
+    jal ra initializeScreen
+    
     jal ra initializeCentroids
     
     jal ra printClusters
     jal ra printCentroids
+    
+    j finish_program
     
     la t0, L
     lw t0, 0(t0)
