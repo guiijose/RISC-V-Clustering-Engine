@@ -55,17 +55,16 @@ L:           .word 10
 # que o grupo considere necessarias para a solucao:
 clusters:	.word 0, 0, 0, 0, 0
 
-# Cada posicao contem o numero de pontos que pertencem ao cluster correspondente
-#candidatosCentroids: .word 0,0, 0,0, 0,0
+# Serve para guardar as somas dos pontos para cada cluster durante o calculo da media do cluster
 sum_centroids:		.word	 0, 0, 0, 0, 0, 0
-n_points_clusters:	.word 	 0, 0, 0
-#points_per_cluster:    .word    0, 0, 0
 
+# Cada posicao contem o numero de pontos que pertencem ao cluster correspondente
+n_points_clusters:	.word 	 0, 0, 0
 
 
 #Definicoes de cores a usar no projeto 
 
-colors:      .word 0xff0000, 0x00ff00, 0x0000ff, 0  # Cores dos pontos do cluster 0, 1, 2, etc.
+colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0, 1, 2, etc.
 
 .equ         black      0
 .equ         white      0xffffff
@@ -179,7 +178,8 @@ printClusters:
     la a0, points              # Endereco do vetor points
     la a1, clusters            # Endereco do vetor clusters
     la a2, colors              # Endereco do vetor colors
-    lw a3, n_points            # Numero de pontos a pintar
+    la a3, n_points
+    lw a3, 0(a3)               # Numero de pontos a pintar
     
     addi sp, sp, -4            # Criar espaco no stack
     sw ra, 0(sp)               # Guardar endereco de retorno
@@ -201,13 +201,15 @@ loop_points_printClusters:
     mv a0, t0                  # Coordenada x
     mv a1, t1                  # Coordenada y
     mv a2, t3                  # Cor correspondente ao cluster
-    addi sp, sp, -4            # Criar espaco no stack
+    addi sp, sp, -8            # Criar espaco no stack
     sw ra, 0(sp)               # Guardar endereco de retorno
+    sw a3, 4(sp)               # Guardar o contador do loop
 
     jal ra, printPoint         # Pinta o ponto na matriz
     
+    lw a3, 4(sp)               # Recuperar o contador do loop
     lw ra, 0(sp)               # Recuperar endereco de retorno
-    addi sp, sp, 4             # Restaurar a stack para o seu estado inicial
+    addi sp, sp, 8             # Restaurar a stack para o seu estado inicial
     
     addi a0, a0, 8             # Avançar para o próximo ponto em points (2 palavras = 8 bytes)
     addi a1, a1, 4             # Avançar para o próximo indice em clusters (1 palavra = 4 bytes)
@@ -232,7 +234,7 @@ end_loop_printClusters:
 printCentroids:
     la t0, centroids           # t0 = endereco base do vetor
     la t1, k                
-    lw a1, 0(a1)               # t1 = numero de pontos
+    lw t1, 0(t1)               # t1 = numero de pontos
     slli t1, t1, 1             # t1 = numero de pontos * 2 = numero de elementos no vetor
     
     li a2, black               # Cor e o terceiro argumento do printPoint
@@ -277,13 +279,14 @@ calculateCentroids:
     
     reset_sum_centroids:
         la t0, k                                  # Load do address de k
-        lw t0, t0                                 # Load do valor de k
+        lw t0, 0(t0)                              # Load do valor de k
         slli t0, t0, 1                            # Multiplica k por 2 (2 coordenadas por cada ponto)
         la t3, sum_centroids                      # Load do address do vetor centroids
         loop_reset:
             beqz t0, load_addresses_calculateCentroids   # Verifica se ainda ha pontos para dar reset                                  
             sw x0, 0(t3)                                 # Guarda 0 no lugar da antiga coordenada
             addi t3, t3, 4                               # Passa o address para o proximo ponto
+            addi t0, t0, -1                              # Decremento do loop
             j loop_reset                                 # Volta ao inicio do loop
 
         
@@ -297,42 +300,42 @@ calculateCentroids:
     loop_calculateCentroids:
         beqz a0, finish_calculateCentroids     # Verifica se ha pontos a analisar
         
-        lw t5, 0(t1)                           # load do numero do cluster
+        lw t5, 0(t1)                           # Load do numero do cluster
         
-        add t2, t2, t5                         # adiciona o valor do cluster ao address do n_points clusters
-        lw t6, 0(t2)                           # load do numero de pontos do cluster
-        addi t6, t6, 1                         # incrementa o numero de pontos do cluster
-        sw t6, 0(t2)                           # guarda o valor
-        sub t2, t2, t5                         # da reset do address do vetor n_points_clusters
+        add t2, t2, t5                         # Adiciona o valor do cluster ao address do n_points clusters
+        lw t6, 0(t2)                           # Load do numero de pontos do cluster
+        addi t6, t6, 1                         # Incrementa o numero de pontos do cluster
+        sw t6, 0(t2)                           # Guarda o valor
+        sub t2, t2, t5                         # Da reset do address do vetor n_points_clusters
         
-        slli t5, t5, 1                         # multiplica por 2 porque ha 2 coordenadas
-        add t3, t3, t5                         # adiciona ao address do cluster
+        slli t5, t5, 1                         # Multiplica por 2 porque ha 2 coordenadas
+        add t3, t3, t5                         # Adiciona ao address do cluster
         
-        lw t4, 0(t0)                           # load da coordenada x
+        lw t4, 0(t0)                           # Load da coordenada x
         
-        lw t6, 0(t3)                           # da load da soma das coordenadas x
-        add t6, t6, t4                         # soma a coordenada x
-        sw t6, 0(t3)                           # guarda a soma
+        lw t6, 0(t3)                           # Da load da soma das coordenadas x
+        add t6, t6, t4                         # Soma a coordenada x
+        sw t6, 0(t3)                           # Guarda a soma
         
-        lw t4, 4(t0)                           # load da coordenada y
+        lw t4, 4(t0)                           # Load da coordenada y
         
-        lw t6, 4(t3)                           # load da soma das coordenadas y do cluster
-        add t6, t6, t4                         # adiciona a coordenada do ponto a soma
-        sw t6, 4(t3)                           # guarda a soma
+        lw t6, 4(t3)                           # Load da soma das coordenadas y do cluster
+        add t6, t6, t4                         # Adiciona a coordenada do ponto a soma
+        sw t6, 4(t3)                           # Guarda a soma
         
-        sub t3, t3, t5                         # da reset no address do vetor sum_centroids
-        addi t0, t0, 8                         # passa o address do vetor points para o proximo
-        addi t1, t1, 4                         # passa o address do vetor clusters para o proximo ponto
-        addi a0, a0, -1                        # decrementa o numero de pontos que ainda falta analisar
+        sub t3, t3, t5                         # Da reset no address do vetor sum_centroids
+        addi t0, t0, 8                         # Passa o address do vetor points para o proximo
+        addi t1, t1, 4                         # Passa o address do vetor clusters para o proximo ponto
+        addi a0, a0, -1                        # Decrementa o numero de pontos que ainda falta analisar
                 
         j loop_calculateCentroids              # Volta ao inicio
 
     finish_calculateCentroids:
-    beqz t5, main                             # Verifica se ainda ha centroids para dividir pelo numero de pontos
+    beqz t5, mainKMeans                       # Verifica se ainda ha centroids para dividir pelo numero de pontos
     la t5, k                                  # Load do address do k
     mv a0, x0                                 # Se a0 e 0, ate agora nenhum ponto foi diferente, se e 1 e porque houve alteracoes nos centroids
     slli a0, a0, 1                            # Multiplica k por 2
-    lw t5, t5                                 # Load do k
+    lw t5, 0(t5)                              # Load do k
     la t2, n_points_clusters                  # Load do address do n_points_clusters
     la t3, sum_centroids                      # Load address do sum_centroids
     la t4, centroids                          # Load do address do vetor centroids
@@ -351,7 +354,7 @@ calculateCentroids:
     bgtz a1, Different                        # Se houver alguma diferenca, salta para a Label Different
     
     Different:
-        li a0, 1                              # Set do valor de a0 para 1, ou seja houve pelo menos uma diferenca
+    li a0, 1                                  # Set do valor de a0 para 1, ou seja houve pelo menos uma diferenca
     
     
     sw t0, 0(t4)                              # Guarda o valor de x do novo centroid
@@ -457,7 +460,7 @@ manhattanDistance:
 
 nearestCluster:
     la t0, k
-    sw t0, 0(t0)
+    lw t0, 0(t0)
     slli t0, t0, 1    # Numero centroides * 2 e o numero de elementos do vetor centroids
     
     la t1, centroids
@@ -506,19 +509,54 @@ nearestCluster:
 
 
 # updateClusters
-
+# FUNCAO AUXILIAR
+# Percorre o vetor points e atribui a cada ponto o cluster mais proximo, guardando esta informacao no vetor clusters
+# Argumentos: nenhum
+# Retorno: nenhum
 
 updateClusters:
     la t0, points
-    la t1, k
-    lw t1, 0(t1)
-    slli t1, t1, 1        # k*2 e o numero de elementos de points
+    la t1, clusters
+    
+    la t2, k
+    lw t2, 0(t2)
+    slli t2, t2, 1        # k*2 e o numero de elementos do vetor points
 
-    li t2, 0    # i = 0
+    li t3, 0    # i = 0
     
     for_updateClusters:
-        bge t2, t1, 
-
+        bge t3, t2, skip_for_updateClusters
+        
+        lw a0, 0(t0)        # Primeiro argumento do nearestCluster e a coordenada x do ponto
+        lw a1, 4(t0)        # Segundo argumento e a coordenada y
+        
+        # Guardar o contexto da funcao
+        addi sp, sp, -20
+        sw ra, 0(sp)
+        sw t0, 4(sp)
+        sw t1, 8(sp)
+        sw t2, 12(sp)
+        sw t3, 16(sp)
+        
+        jal ra, nearestCluster        # nearestCluster ira devolver o numero do centroide mais proximo ao ponto
+        
+        # Recuperar o contexto da funcao
+        lw t3, 16(sp)
+        lw t2, 12(sp)
+        lw t1, 8(sp)
+        lw t0, 4(sp)
+        lw ra, 0(sp)
+        addi sp, sp, 20
+        
+        sw a0, 0(t1)        # Centroide mais proximo esta em a0, guarda-lo na posicao correspondente ao ponto no vetor clusters
+        
+        addi t0, t0, 8      # Avancamos 2 posicoes no vetor points, para a proxima coordenada x
+        addi t1, t1, 4      # Avancamos 1 posicao no vetor clusters, para o proximo ponto
+        
+        addi t2, t2, 1      # i++
+        
+    skip_for_updateClusters:
+        jr ra
 
 
 
@@ -531,7 +569,7 @@ mainKMeans:
     addi sp, sp, -4
     sw ra, 0(sp)
   
-    jal ra initializeScreen
+    #jal ra initializeScreen
 
     jal ra initializeCentroids
     
