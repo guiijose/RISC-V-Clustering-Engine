@@ -53,7 +53,19 @@ L:           .word 10
 
 # Abaixo devem ser declarados o vetor clusters (2a parte) e outras estruturas de dados
 # que o grupo considere necessarias para a solucao:
-clusters:	.word 0, 0, 0, 0, 0
+
+# input A
+#clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+# input B
+#clusters:	.word 0, 0, 0, 0, 0
+
+# input C
+clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+# input D
+#clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
 
 # Serve para guardar as somas dos pontos para cada cluster durante o calculo da media do cluster
 sum_centroids:		.word	 0, 0, 0, 0, 0, 0
@@ -563,13 +575,12 @@ mainKMeans:
     sw ra, 0(sp)
   
     jal ra initializeScreen
-    
+    #j finish_program
     jal ra initializeCentroids
     
     jal ra printClusters
     jal ra printCentroids
-    
-    j finish_program
+    #j finish_program
     
     la t0, L
     lw t0, 0(t0)
