@@ -171,6 +171,8 @@ cleanScreen:
         addi t1, t1, -1                 # Reduzir o contador de pontos
         j loop_pontos_cleanScreen                   # Repetir o loop
 
+    #apagar tb centroides
+
     end_loop_cleanScreen:
         lw ra, 0(sp)                    # Carregar o return adress inicial
         addi sp, sp, 4                  # Restaurar a stack para o seu estado inicial
@@ -298,18 +300,19 @@ calculateCentroids:
         #mv a0, s0                                  # Copia do numero de pontos
 
     loop_calculateCentroids:
-        beqz a0, finish_calculateCentroids     # Verifica se ha pontos a analisar
+        beqz a0, skip_loop_calculateCentroids     # Verifica se ha pontos a analisar
         
         lw t5, 0(t1)                           # Load do numero do cluster
         
         # atualiza o n_points_clusters
+        slli t5, t5, 2
         add t2, t2, t5                         # Adiciona o valor do cluster ao address do n_points clusters
         lw t6, 0(t2)                           # Load do numero de pontos do cluster
         addi t6, t6, 1                         # Incrementa o numero de pontos do cluster
         sw t6, 0(t2)                           # Guarda o valor
         sub t2, t2, t5                         # Da reset do address do vetor n_points_clusters
         
-        #slli t5, t5, 1                         # Multiplica por 2 porque ha 2 coordenadas
+        slli t5, t5, 1                         # Multiplica por 2 porque ha 2 coordenadas
         add t3, t3, t5                         # Adiciona ao address do sum_centroids
         
         lw t4, 0(t0)                           # Load da coordenada x
@@ -331,12 +334,17 @@ calculateCentroids:
                 
         j loop_calculateCentroids              # Volta ao inicio
 
+
+    skip_loop_calculateCentroids:
+        la t5, k
+        lw t5, 0(t5)
+    #j finish_program
     finish_calculateCentroids:
-    beqz t5, finish_program                   # Verifica se ainda ha centroids para dividir pelo numero de pontos
-    la t5, k                                  # Load do address do k
+    beqz t5, end_calculateCentroids                   # Verifica se ainda ha centroids para dividir pelo numero de pontos
+#    la t5, k                                  # Load do address do k
 #    mv a0, x0                                 # Se a0 e 0, ate agora nenhum ponto foi diferente, se e 1 e porque houve alteracoes nos centroids
 #    slli a0, a0, 1                            # Multiplica k por 2
-    lw t5, 0(t5)                              # Load do k
+#    lw t5, 0(t5)                              # Load do k
 #    la t2, n_points_clusters                  # Load do address do n_points_clusters
 #    la t3, sum_centroids                      # Load address do sum_centroids
     la t4, centroids                          # Load do address do vetor centroids
@@ -364,7 +372,7 @@ calculateCentroids:
 #    Different:
     sw t0, 0(t4)                              # Guarda o valor de x do novo centroide
     sw t1, 4(t4)                              # Guarda o valor de y do novo centroide
-    
+   # j finish_program
     
     addi t2, t2, 4                            # Passa o address para o próximo ponto
     addi t3, t3, 8                            # Passa o address do sum centriods para o proximo ponto
@@ -372,6 +380,9 @@ calculateCentroids:
     addi t5, t5, -1                           # Decrementa por 1 o numero de centroids para dividir 
     j finish_calculateCentroids               # Volta ao inicio do loop
     
+    end_calculateCentroids:
+        #j finish_program
+        jr ra
 
 
 
@@ -558,9 +569,11 @@ updateClusters:
         addi t0, t0, 8      # Avancamos 2 posicoes no vetor points, para a proxima coordenada x
         addi t1, t1, 4      # Avancamos 1 posicao no vetor clusters, para o proximo ponto
         
-        addi t2, t2, 1      # i++
+        addi t3, t3, 1      # i++
+        j for_updateClusters
         
     skip_for_updateClusters:
+        #j finish_program
         jr ra
 
 
@@ -577,12 +590,12 @@ mainKMeans:
     addi sp, sp, -4
     sw ra, 0(sp)
   
-    #jal ra initializeScreen
+    jal ra initializeScreen
     #j finish_program
     #jal ra initializeCentroids
     
-    #jal ra printClusters
-    #jal ra printCentroids
+    jal ra printClusters
+    jal ra printCentroids
     #j finish_program
     
     la t0, L
@@ -598,14 +611,14 @@ mainKMeans:
         
         jal ra updateClusters
         
-        jal ra cleanScreen
-        
+        #jal ra cleanScreen
+        jal ra initializeScreen
         jal ra printClusters
         
         jal ra printCentroids
         
         jal ra calculateCentroids
-        j finish_program
+        #j finish_program
         #beqz a0, skip_main_loop
         
         lw t1, 4(sp)
