@@ -307,7 +307,7 @@ calculateCentroids:
         sw t6, 0(t2)                           # Guarda o valor
         sub t2, t2, t5                         # Da reset do address do vetor n_points_clusters
         
-        slli t5, t5, 1                         # Multiplica por 2 porque ha 2 coordenadas
+        #slli t5, t5, 1                         # Multiplica por 2 porque ha 2 coordenadas
         add t3, t3, t5                         # Adiciona ao address do sum_centroids
         
         lw t4, 0(t0)                           # Load da coordenada x
@@ -335,8 +335,8 @@ calculateCentroids:
     mv a0, x0                                 # Se a0 e 0, ate agora nenhum ponto foi diferente, se e 1 e porque houve alteracoes nos centroids
     slli a0, a0, 1                            # Multiplica k por 2
     lw t5, 0(t5)                              # Load do k
-    la t2, n_points_clusters                  # Load do address do n_points_clusters
-    la t3, sum_centroids                      # Load address do sum_centroids
+#    la t2, n_points_clusters                  # Load do address do n_points_clusters
+#    la t3, sum_centroids                      # Load address do sum_centroids
     la t4, centroids                          # Load do address do vetor centroids
     lw t6, 0(t2)                              # Load do numero de pontos no cluster
     
