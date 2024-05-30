@@ -29,21 +29,21 @@
 #points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
 
 #Input B - Cruz
-n_points:    .word 5
-points:      .word 4,2, 5,1, 5,2, 5,3 6,2
+#n_points:    .word 5
+#points:      .word 4,2, 5,1, 5,2, 5,3 6,2
 
 #Input C
 #n_points:    .word 23
 #points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7,2, 7,3, 6,8, 6,9, 7,8, 8,7, 8,8, 8,9, 9,7, 9,8
 
 #Input D
-#n_points:    .word 30
-#points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
+n_points:    .word 30
+points:      .word 16, 1, 17, 2, 18, 6, 20, 3, 21, 1, 17, 4, 21, 7, 16, 4, 21, 6, 19, 6, 4, 24, 6, 24, 8, 23, 6, 26, 6, 26, 6, 23, 8, 25, 7, 26, 7, 20, 4, 21, 4, 10, 2, 10, 3, 11, 2, 12, 4, 13, 4, 9, 4, 9, 3, 8, 0, 10, 4, 10
 
 
 
 # Valores de centroids, k e L a usar na 2a parte do projeto:
-centroids:   .word 0,0, 0,0, 0,0
+centroids:   .word 0,1, 0,2, 0,3
 k:           .word 3
 L:           .word 10
 
@@ -54,19 +54,21 @@ L:           .word 10
 #clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 #Input B
-clusters:	.word 0, 0, 0, 0, 0
+#clusters:	.word 0, 0, 0, 0, 0
 
 #Input C
 #clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 #Input D
-#clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 
 # Serve para guardar as somas dos pontos para cada cluster durante o calculo da media do cluster
-sum_centroids:		.word	 0, 0, 0, 0, 0
+# k*2 elementos
+sum_centroids:		.word	 0,0, 0,0, 0,0
 
 # Cada posicao contem o numero de pontos que pertencem ao cluster correspondente
+# k elementos
 n_points_clusters:	.word 	 0, 0, 0, 0, 0
 
 
@@ -332,31 +334,34 @@ calculateCentroids:
     finish_calculateCentroids:
     beqz t5, finish_program                   # Verifica se ainda ha centroids para dividir pelo numero de pontos
     la t5, k                                  # Load do address do k
-    mv a0, x0                                 # Se a0 e 0, ate agora nenhum ponto foi diferente, se e 1 e porque houve alteracoes nos centroids
-    slli a0, a0, 1                            # Multiplica k por 2
+#    mv a0, x0                                 # Se a0 e 0, ate agora nenhum ponto foi diferente, se e 1 e porque houve alteracoes nos centroids
+#    slli a0, a0, 1                            # Multiplica k por 2
     lw t5, 0(t5)                              # Load do k
 #    la t2, n_points_clusters                  # Load do address do n_points_clusters
 #    la t3, sum_centroids                      # Load address do sum_centroids
     la t4, centroids                          # Load do address do vetor centroids
     lw t6, 0(t2)                              # Load do numero de pontos no cluster
     
-    lw t0, 0(t3)                              # Load do x
-    lw t1, 4(t3)                              # Load do y
+    lw t0, 0(t3)                              # Load da soma dos x
+    lw t1, 4(t3)                              # Load da soma dos y
     div t0, t0, t6                            # Divide soma dos x pelo numero de pontos no cluster
     div t1, t1, t6                            # Divide soma dos y pelo numero de pontos no cluster
     
-    lw a1, 0(t4)                              # Load da coordenada x do atual centroide
-    lw a2, 4(t4)                              # Load da coordenada y do atual centroide
-    sub a1, a1, t0                            # Diferenca da coordenada x do atual e do novo centroide
-    sub a2, a2, t1                            # Diferenca da coordenada y do atual e do novo centroide
-    add a1, a1, a2                            # Soma das diferencas
-    bgtz a1, Different                        # Se houver alguma diferenca, salta para a Label Different
+#    lw a1, 0(t4)                              # Load da coordenada x do atual centroide
+#    lw a2, 4(t4)                              # Load da coordenada y do atual centroide
     
+#    li a0, 1
     
-    Different:
-    li a0, 1                                  # Set do valor de a0 para 1, ou seja houve pelo menos uma diferenca
+#    sub a1, a1, t0                            # Diferenca da coordenada x do atual e do novo centroide
+#    bnez a1, Different
+#    sub a2, a2, t1                            # Diferenca da coordenada y do atual e do novo centroide
+    #add a1, a1, a2                            # Soma das diferencas
+#    bnez a2, Different                            # Se houver alguma diferenca, salta para a Label Different
     
+                                  # Set do valor de a0 para 1, ou seja houve pelo menos uma diferenca
+#    li a0, 0
     
+#    Different:
     sw t0, 0(t4)                              # Guarda o valor de x do novo centroide
     sw t1, 4(t4)                              # Guarda o valor de y do novo centroide
     
@@ -572,12 +577,12 @@ mainKMeans:
     addi sp, sp, -4
     sw ra, 0(sp)
   
-    jal ra initializeScreen
+    #jal ra initializeScreen
     #j finish_program
-    jal ra initializeCentroids
+    #jal ra initializeCentroids
     
-    jal ra printClusters
-    jal ra printCentroids
+    #jal ra printClusters
+    #jal ra printCentroids
     #j finish_program
     
     la t0, L
@@ -600,7 +605,8 @@ mainKMeans:
         jal ra printCentroids
         
         jal ra calculateCentroids
-        beqz a0, skip_main_loop
+        j finish_program
+        #beqz a0, skip_main_loop
         
         lw t1, 4(sp)
         lw t0, 0(sp)
