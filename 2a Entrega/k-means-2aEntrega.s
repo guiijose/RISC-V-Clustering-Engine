@@ -214,8 +214,8 @@ loop_points_printClusters:
     lw ra, 0(sp)               # Recuperar endereco de retorno
     addi sp, sp, 4             # Restaurar a stack para o seu estado inicial
     
-    addi t0, t0, 8             # AvanÃ§ar para o prÃ³ximo ponto em points (2 palavras = 8 bytes)
-    addi t1, t1, 4             # AvanÃ§ar para o prÃ³ximo indice em clusters (1 palavra = 4 bytes)
+    addi t0, t0, 8             # Avançar para o próximo ponto em points (2 palavras = 8 bytes)
+    addi t1, t1, 4             # Avançar para o próximo indice em clusters (1 palavra = 4 bytes)
     addi t3, t3, -1            # Decrementar o contador de pontos
     
     j loop_points_printClusters              # Repetir o loop
@@ -355,26 +355,21 @@ calculateCentroids:
     div t0, t0, t6                            # Divide soma dos x pelo numero de pontos no cluster
     div t1, t1, t6                            # Divide soma dos y pelo numero de pontos no cluster
     
-#    lw a1, 0(t4)                              # Load da coordenada x do atual centroide
-#    lw a2, 4(t4)                              # Load da coordenada y do atual centroide
+    lw a1, 0(t4)                              # Load da coordenada x do atual centroide
+    lw a2, 4(t4)                              # Load da coordenada y do atual centroide
+       
+    sub a1, a1, t0                            # Diferenca da coordenada x do atual e do novo centroide
+    mul a1, a1, a1                            # Quarado da diferenca, e sempre positivo
+    sub a2, a2, t1                            # Diferenca da coordenada y do atual e do novo centroide
+    mul a2, a2, a2
+    add a1, a1, a2                            # Soma das diferencas
     
-#    li a0, 1
+    add a0, a0, a1
     
-#    sub a1, a1, t0                            # Diferenca da coordenada x do atual e do novo centroide
-#    bnez a1, Different
-#    sub a2, a2, t1                            # Diferenca da coordenada y do atual e do novo centroide
-    #add a1, a1, a2                            # Soma das diferencas
-#    bnez a2, Different                            # Se houver alguma diferenca, salta para a Label Different
-    
-                                  # Set do valor de a0 para 1, ou seja houve pelo menos uma diferenca
-#    li a0, 0
-    
-#    Different:
     sw t0, 0(t4)                              # Guarda o valor de x do novo centroide
     sw t1, 4(t4)                              # Guarda o valor de y do novo centroide
-   # j finish_program
     
-    addi t2, t2, 4                            # Passa o address para o prÃ³ximo ponto
+    addi t2, t2, 4                            # Passa o address para o próximo ponto
     addi t3, t3, 8                            # Passa o address do sum centriods para o proximo ponto
     addi t4, t4, 8                            # Passo o address do vetor centroids para o proximo ponto
     addi t5, t5, -1                           # Decrementa por 1 o numero de centroids para dividir 
@@ -509,7 +504,7 @@ nearestCluster:
         
         # Se distancia antiga (t2) continuar a ser a maior que a calculada, prepara a proxima iteracao do loop
         bgt t2, t4, prox_iteracao_nearestCluster
-        # Se nÃ£o, atualiza o indice em t5 para o do cluster correspondente ao centroide desta iteracao
+        # Se não, atualiza o indice em t5 para o do cluster correspondente ao centroide desta iteracao
         srai t5, t3, 1    # t5 = t3/2 --> indice e metade do indice da coordenada x do centroide
         mv t2, t4         # Distancia em t4 passa a ser a maior distancia
         
