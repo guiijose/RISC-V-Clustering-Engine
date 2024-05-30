@@ -29,12 +29,12 @@
 #points:      .word 0,0, 1,1, 2,2, 3,3, 4,4, 5,5, 6,6, 7,7 8,8
 
 #Input B - Cruz
-#n_points:    .word 5
-#points:      .word 4,2, 5,1, 5,2, 5,3 6,2
+n_points:    .word 5
+points:      .word 4,2, 5,1, 5,2, 5,3 6,2
 
 #Input C
-n_points:    .word 23
-points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7,2, 7,3, 6,8, 6,9, 7,8, 8,7, 8,8, 8,9, 9,7, 9,8
+#n_points:    .word 23
+#points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7,2, 7,3, 6,8, 6,9, 7,8, 8,7, 8,8, 8,9, 9,7, 9,8
 
 #Input D
 #n_points:    .word 30
@@ -42,11 +42,7 @@ points: .word 0,0, 0,1, 0,2, 1,0, 1,1, 1,2, 1,3, 2,0, 2,1, 5,3, 6,2, 6,3, 6,4, 7
 
 
 
-# Valores de centroids e k a usar na 1a parte do projeto:
-#centroids:   .word 0,0
-#k:           .word 1
-
-# Valores de centroids, k e L a usar na 2a parte do prejeto:
+# Valores de centroids, k e L a usar na 2a parte do projeto:
 centroids:   .word 0,0, 0,0, 0,0
 k:           .word 3
 L:           .word 10
@@ -54,24 +50,24 @@ L:           .word 10
 # Abaixo devem ser declarados o vetor clusters (2a parte) e outras estruturas de dados
 # que o grupo considere necessarias para a solucao:
 
-# input A
+#Input A
 #clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-# input B
-#clusters:	.word 0, 0, 0, 0, 0
+#Input B
+clusters:	.word 0, 0, 0, 0, 0
 
-# input C
-clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+#Input C
+#clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
-# input D
+#Input D
 #clusters:    .word 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 
 
 # Serve para guardar as somas dos pontos para cada cluster durante o calculo da media do cluster
-sum_centroids:		.word	 0, 0, 0, 0, 0, 0
+sum_centroids:		.word	 0, 0, 0, 0, 0
 
 # Cada posicao contem o numero de pontos que pertencem ao cluster correspondente
-n_points_clusters:	.word 	 0, 0, 0
+n_points_clusters:	.word 	 0, 0, 0, 0, 0
 
 
 #Definicoes de cores a usar no projeto 
@@ -304,6 +300,7 @@ calculateCentroids:
         
         lw t5, 0(t1)                           # Load do numero do cluster
         
+        # atualiza o n_points_clusters
         add t2, t2, t5                         # Adiciona o valor do cluster ao address do n_points clusters
         lw t6, 0(t2)                           # Load do numero de pontos do cluster
         addi t6, t6, 1                         # Incrementa o numero de pontos do cluster
@@ -311,7 +308,7 @@ calculateCentroids:
         sub t2, t2, t5                         # Da reset do address do vetor n_points_clusters
         
         slli t5, t5, 1                         # Multiplica por 2 porque ha 2 coordenadas
-        add t3, t3, t5                         # Adiciona ao address do cluster
+        add t3, t3, t5                         # Adiciona ao address do sum_centroids
         
         lw t4, 0(t0)                           # Load da coordenada x
         
@@ -348,19 +345,20 @@ calculateCentroids:
     div t0, t0, t6                            # Divide soma dos x pelo numero de pontos no cluster
     div t1, t1, t6                            # Divide soma dos y pelo numero de pontos no cluster
     
-    lw a1, 0(t4)                              # Load da coordenada x do atual centroid
-    lw a2, 4(t4)                              # Load da coordenada y do atual centroid
-    sub a1, a1, t0                            # Diferenca da coordenada x do atual e do novo centroid
-    sub a2, a2, t1                            # Diferenca da coordenada y do atual e do novo centroid
+    lw a1, 0(t4)                              # Load da coordenada x do atual centroide
+    lw a2, 4(t4)                              # Load da coordenada y do atual centroide
+    sub a1, a1, t0                            # Diferenca da coordenada x do atual e do novo centroide
+    sub a2, a2, t1                            # Diferenca da coordenada y do atual e do novo centroide
     add a1, a1, a2                            # Soma das diferencas
     bgtz a1, Different                        # Se houver alguma diferenca, salta para a Label Different
+    
     
     Different:
     li a0, 1                                  # Set do valor de a0 para 1, ou seja houve pelo menos uma diferenca
     
     
-    sw t0, 0(t4)                              # Guarda o valor de x do novo centroid
-    sw t1, 4(t4)                              # Guarda o valor de y do novo centroid
+    sw t0, 0(t4)                              # Guarda o valor de x do novo centroide
+    sw t1, 4(t4)                              # Guarda o valor de y do novo centroide
     
     
     addi t2, t2, 4                            # Passa o address para o próximo ponto
