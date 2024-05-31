@@ -93,8 +93,9 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
 
 .equ         black      0
 .equ         white      0xffffff
-.equ LED_MATRIX_WIDTH, 32   # Definir tamanho
-.equ LED_MATRIX_HEIGHT, 32  # Definir tamanho
+.equ         LED_MATRIX_WIDTH, 32   # Definir tamanho
+.equ         LED_MATRIX_HEIGHT, 32  # Definir tamanho
+
 
 
 
@@ -107,6 +108,7 @@ colors:      .word 0xff0000, 0x00ff00, 0x0000ff  # Cores dos pontos do cluster 0
     finish_program:
         li a7, 10
         ecall
+
 
 
 
@@ -131,6 +133,7 @@ printPoint:
         add a3, a3, a0   # addr
         sw a2, 0(a3)
         jr ra
+
 
 
 
@@ -159,6 +162,7 @@ cleanScreen:
     addi sp, sp, 4              # Restaurar o stack para o seu estado inicial
     jr ra                       # Return
 
+    
     
     
 ### cleanCentroids
@@ -202,37 +206,38 @@ cleanCentroids:
 printClusters:
     la t0, points                            # Endereco do vetor points
     la t1, clusters                          # Endereco do vetor clusters
-    la t2, colors                            # Endereco do vetor colors
+    la t2, colors                            # Endereco do vetor colors^
     mv t3, s0                                # n_points e o numero de pontos a pintar
 
     # Loop para percorrer todos os pontos
-loop_points_printClusters:
-    beqz t3, end_loop_printClusters          # Se a3 (contador de pontos) for zero, sair do loop
+    loop_points_printClusters:
+        beqz t3, end_loop_printClusters          # Se a3 (contador de pontos) for zero, sair do loop
     
-    lw a0, 0(t0)                             # Carregar coordenada x do ponto atual para o 1o argumento do printPoint
-    lw a1, 4(t0)                             # Carregar coordenada y para o 2o argumento
+        lw a0, 0(t0)                             # Carregar coordenada x do ponto atual para o 1o argumento do printPoint
+        lw a1, 4(t0)                             # Carregar coordenada y para o 2o argumento
     
-    lw t4, 0(t1)                             # Carregar o indice do cluster atual do vetor clusters
-    slli t4, t4, 2                           # Multiplicar o indice do cluster por 4 (tamanho da palavra) para obter o offset
-    add t4, t4, t2                           # Adicionar o offset ao endereco base do vetor colors
-    lw a2, 0(t4)                             # Carregar a cor correspondente ao cluster para o 3o argumento do printPoint
+        lw t4, 0(t1)                             # Carregar o indice do cluster atual do vetor clusters
+        slli t4, t4, 2                           # Multiplicar o indice do cluster por 4 (tamanho da palavra) para obter o offset
+        add t4, t4, t2                           # Adicionar o offset ao endereco base do vetor colors
+        lw a2, 0(t4)                             # Carregar a cor correspondente ao cluster para o 3o argumento do printPoint
     
-    addi sp, sp, -4                          # Criar espaco no stack
-    sw ra, 0(sp)                             # Guardar endereco de retorno
+        addi sp, sp, -4                          # Criar espaco no stack
+        sw ra, 0(sp)                             # Guardar endereco de retorno
 
-    jal ra, printPoint                       # Pinta o ponto na matriz
+        jal ra, printPoint                       # Pinta o ponto na matriz
     
-    lw ra, 0(sp)                             # Recuperar endereco de retorno
-    addi sp, sp, 4                           # Restaurar a stack para o seu estado inicial
+        lw ra, 0(sp)                             # Recuperar endereco de retorno
+        addi sp, sp, 4                           # Restaurar a stack para o seu estado inicial
     
-    addi t0, t0, 8                           # Avançar para o próximo ponto em points (2 palavras = 8 bytes)
-    addi t1, t1, 4                           # Avançar para o próximo indice em clusters (1 palavra = 4 bytes)
-    addi t3, t3, -1                          # Decrementar o contador de pontos
+        addi t0, t0, 8                           # Avancar para o proximo ponto em points (2 palavras = 8 bytes)
+        addi t1, t1, 4                           # Avancar para o proximo indice em clusters (1 palavra = 4 bytes)
+        addi t3, t3, -1                          # Decrementar o contador de pontos
     
-    j loop_points_printClusters              # Repetir o loop
+        j loop_points_printClusters              # Repetir o loop
     
-end_loop_printClusters:   
-    jr ra
+    end_loop_printClusters:   
+        jr ra
+
 
 
 
@@ -261,7 +266,7 @@ printCentroids:
         
         # A cor ja esta no a2
         
-        #(printPoint nao interfere com registos temporarios)
+        # (printPoint nao interfere com registos temporarios)
         addi sp, sp, -4                         # Criar espaco no stack
         sw ra, 0(sp)                            # Guardar endereco de retorno
 
@@ -390,7 +395,7 @@ calculateCentroids:
 
     
     prox_iteracao_finish_calculateCentroids:
-        addi t2, t2, 4                                   # Passa o address para o próximo ponto
+        addi t2, t2, 4                                   # Passa o address para o prï¿½ximo ponto
         addi t3, t3, 8                                   # Passa o address do sum centriods para o proximo ponto
         addi t4, t4, 8                                   # Passo o address do vetor centroids para o proximo ponto
         addi t5, t5, -1                                  # Decrementa por 1 o numero de centroids para dividir 
@@ -398,7 +403,6 @@ calculateCentroids:
     
     end_calculateCentroids:
         jr ra
-
 
 
 
@@ -452,7 +456,6 @@ initializeCentroids:
         
     skip_for_initializeCentroids:
         jr ra
-    
 
 
 
@@ -479,6 +482,7 @@ manhattanDistance:
                 add a0, a0, a1            # A distancia e a soma das duas diferencas em valor absoluto
                 jr ra
         
+
 
 
 ### nearestCluster
@@ -522,7 +526,7 @@ nearestCluster:
         
         # Se distancia antiga (t2) continuar a ser menor que a calculada, prepara a proxima iteracao do loop
         blt t2, t4, prox_iteracao_nearestCluster
-        # Se não, atualiza o indice em t5 para o do cluster correspondente ao centroide desta iteracao
+        # Se nï¿½o, atualiza o indice em t5 para o do cluster correspondente ao centroide desta iteracao
         srai t5, t3, 1    # t5 = t3/2 --> indice e metade do indice da coordenada x do centroide
         mv t2, t4         # Distancia em t4 passa a ser a menor distancia
         
@@ -535,6 +539,8 @@ nearestCluster:
     skip_for_nearestCluster:
         mv a0, t5        # Poe o valor de retorno no registo adequado
         jr ra
+
+
 
 
 # updateClusters
@@ -588,6 +594,7 @@ updateClusters:
 
 
 
+
 ### mainKMeans
 # Executa o algoritmo *k-means*.
 # Argumentos: nenhum
@@ -608,11 +615,11 @@ mainKMeans:
     addi sp, sp, -4
     sw ra, 0(sp)
   
-    jal ra cleanScreen
-    jal ra initializeCentroids
+    jal ra cleanScreen            # Inicializa o ecra todo a branco
+    jal ra initializeCentroids    # Escolhe 3 centroides de forma pseudo-aleatoria
     
-    jal ra printClusters
-    jal ra printCentroids
+    jal ra printClusters          # Pinta os pontos na matriz
+    jal ra printCentroids         # Pinta os centroides iniciais na matriz
     
     la t0, L
     lw t0, 0(t0)
@@ -621,28 +628,32 @@ mainKMeans:
     main_loop:
         beq t1, t0, skip_main_loop   # Verifica se ja chegou as L iteracoes, se sim, termina o loop
         
+        # Guardar registos que controlam o loop no stack
         addi sp, sp, -8
         sw t0, 0(sp)
         sw t1, 4(sp)
         
-        jal ra updateClusters
+        # Clusters
+        jal ra updateClusters    # Atribui a cada ponto o cluster mais proximo
         
         jal ra printClusters    # Imprime os pontos diferenciados por cor segundo o cluster a que pertencem
         
+        # Centroides
         jal ra cleanCentroids     # Apaga todos os centroides pintados na matriz
 
-        jal ra calculateCentroids   # Calcula o novo valo para os centroides
+        jal ra calculateCentroids   # Calcula o novo valor para os centroides
 
-        addi sp, sp, -4
-        sw a0, 0(sp)
+        addi sp, sp, -4            
+        sw a0, 0(sp)                # Guarda o valor de retorno do calculateCentroids para verificar o caso terminal depois
 
         jal ra printCentroids     # Imprime os novos centroides
 
-        lw a0, 0(sp)
+        lw a0, 0(sp)                # Recupera o valor de retorno do calculateCentroids
         addi sp, sp, 4
 
-        beqz a0, skip_main_loop  # Verifica se houve alteracoes nos centroides, se nao, termina o loop
+        beqz a0, skip_main_loop  # Verifica se houve alteracoes nos centroides, se nao, termina o algoritmo
         
+        # Recupera registos que controlam o loop
         lw t1, 4(sp)
         lw t0, 0(sp)
         addi sp, sp, 8            # Reset no stack pointer
