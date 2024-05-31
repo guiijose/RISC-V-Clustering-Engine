@@ -286,7 +286,8 @@ printCentroids:
 ### calculateCentroids
 # Calcula os k centroides, a partir da distribuicao atual de pontos associados a cada agrupamento (cluster)
 # Argumentos: nenhum
-# Retorno: 1 se os centroides calculados forem diferentes aos antigos, 0 se os centroides nao se moverem
+# Retorno: 
+# a0: 1 se os centroides calculados forem diferentes aos antigos, 0 se os centroides nao se moverem
 
 calculateCentroids:
     
@@ -491,9 +492,7 @@ manhattanDistance:
 # a0: cluster index
 
 nearestCluster:
-    #la t0, k
-    #lw t0, 0(t0)
-    mv t0, s1
+    mv t0, s1         # t0 = k = numero de centroides
     slli t0, t0, 1    # Numero centroides * 2 e o numero de elementos do vetor centroids
     
     la t1, centroids
@@ -551,9 +550,7 @@ updateClusters:
     la t0, points
     la t1, clusters
     
-    #la t2, n_points
-    #lw t2, 0(t2)        # Vetor cluster tem n_points elementos
-    mv t2, s0
+    mv t2, s0            # Vetor clusters tem n_points elementos
 
     li t3, 0    # i = 0
     
