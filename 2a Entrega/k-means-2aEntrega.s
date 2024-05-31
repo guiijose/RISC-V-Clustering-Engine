@@ -629,14 +629,20 @@ mainKMeans:
         sw t1, 4(sp)
         
         jal ra updateClusters
-
-        jal ra cleanScreen
-
+        
         jal ra printClusters
+        
+        jal ra cleanCentroids
+
+        jal ra calculateCentroids
+
+        addi sp, sp, -4
+        sw a0, 0(sp)
 
         jal ra printCentroids
 
-        jal ra calculateCentroids
+        lw a0, 0(sp)
+        addi sp, sp, 4
 
         beqz a0, skip_main_loop
         
