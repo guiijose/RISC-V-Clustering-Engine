@@ -587,7 +587,6 @@ updateClusters:
         j for_updateClusters
         
     skip_for_updateClusters:
-        #j finish_program
         jr ra
 
 
@@ -613,12 +612,10 @@ mainKMeans:
     sw ra, 0(sp)
   
     jal ra cleanScreen
-    #j finish_program
     jal ra initializeCentroids
     
     jal ra printClusters
     jal ra printCentroids
-    #j finish_program
     
     la t0, L
     lw t0, 0(t0)
@@ -632,16 +629,15 @@ mainKMeans:
         sw t1, 4(sp)
         
         jal ra updateClusters
-        #j finish_program
+
         jal ra cleanScreen
-        #j finish_program
+
         jal ra printClusters
-        #j finish_program
+
         jal ra printCentroids
-        #jal ra cleanScreen
-        #j finish_program
+
         jal ra calculateCentroids
-        #j finish_program
+
         beqz a0, skip_main_loop
         
         lw t1, 4(sp)
